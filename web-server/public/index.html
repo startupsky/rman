@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>
+            Running Man
+        </title>
+        <link rel="stylesheet" href="style.css" type="text/css" />
+        <script src="js/lib/jquery-1.8.0.min.js" type="text/javascript">
+        </script>
+
+        <script src="js/lib/build/build.js" type="text/javascript">
+
+        </script>
+        <script type="text/javascript">
+         
+         require('boot');
+        </script> 
+        <script src="js/client.js">
+                		
+        </script>
+        <script src="js/pop.js" type="text/javascript">
+
+        </script>
+    </head>
+    
+    <body>
+        <div id="app">
+            <div id="loginView">
+                <div id="loginTitle">
+                    跑跑跑
+                </div>
+                <table>
+                    <tr>
+                        <td>
+                            <input id="loginUser" type="text" placeholder="用户名"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input id="password" type="text" placeholder="密码" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input id="login" type='button' value="跑" />
+                        </td>
+                    </tr>
+                </table>
+                <div id="loginError">
+                </div>
+            </div>
+            <div id="gamepanel">
+                <span id="displayname"></span>(<span id="userid"></span>)，你好！
+                游戏控制区
+                <table>
+                    <tr>
+                        <td><input id="gamename" type="text" placeholder="游戏名称"/></td>
+                        <td><input id="maxplayer" type="text" placeholder="最大人数"/></td>
+                        <td><input id="city" type="text" placeholder="城市"/></td>
+                        <td><input id="x1" type="text" placeholder="坐标1,X"/></td>
+                        <td><input id="y1" type="text" placeholder="坐标1,Y"/></td>
+                        <td><input id="x2" type="text" placeholder="坐标2,X"/></td>
+                        <td><input id="y2" type="text" placeholder="坐标2,Y"/></td>
+                        <td><select name="gameType" id="gameTypeList">
+                            <option value="pacman">
+                                pacman
+                            </option>
+                        </select></td>
+                        <td><input id="creategame" type='button' value="创建游戏"/></td>
+                        <td><input id="listgame" type='button' value="游戏列表" /></td>
+                    </tr>
+                    <tr>
+                        
+                    </tr>
+                    <tr>
+
+                    </tr>
+                </table>
+            </div>
+            <div id="gameresultpanel"></div>
+        </div>
+        <div id="pop">
+            <div id="popHead">
+                <a id="popClose" title="close">Close</a>
+                <h2>
+                    Tip
+                </h2>
+            </div>
+            <div id="popContent">
+                <dl>
+                    <dd id="popIntro">
+                    </dd>
+                </dl>
+                <p id="popMore">
+                    No Tip Again
+                </p>
+            </div>
+        </div>
+    </body>
+
+</html>
