@@ -4,6 +4,7 @@ logs/*.log
 *.log
 !.gitignore
 game-server/node_modules/*
+game-server/logs/*
 web-server/node_modules/*
 .project
 .settings/
