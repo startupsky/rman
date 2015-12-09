@@ -62,3 +62,19 @@
 		"CurrentPlayers":["fli"]
 	},
 ```
+
+##JoinGame
+###Request
+```
+{
+	gameid: gameid,
+	userid: userid
+}
+```
+###Response
+```
+{
+	success: false,
+	message: 已经加入这个游戏！
+}
+```

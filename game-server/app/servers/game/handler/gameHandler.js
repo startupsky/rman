@@ -1,4 +1,7 @@
-
+var GAME_NOT_FOUND = "没有这个游戏！";
+var GAME_FULL = "游戏人数已满！";
+var GAME_STARTED = "游戏状态不是等待！";
+var ALREADY_IN_GAME = "已经加入这个游戏！";
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -53,5 +56,50 @@ handler.list = function (msg, session, next) {
     
     next(null, {
         games: JSON.stringify(games)
+    });
+};
+
+
+handler.join = function (msg, session, next) {
+    var gameid = msg.gameid
+    var userid = msg.userid
+    var success = false
+    var message = GAME_NOT_FOUND
+    currentgames.forEach(function(element) {
+        if(gameid == element.ID)
+        {
+            if(element.CurrentPlayers.length >= element.Maxplayer)
+            {
+                message = GAME_FULL
+            }
+            else
+            {
+                var alreadyin = false;
+                for(var index = 0; index < element.CurrentPlayers.length; index++)
+                {
+                    if(element.CurrentPlayers[index]==userid)
+                    {
+                        alreadyin = true
+                        break
+                    }
+                }
+                if(alreadyin)
+                {
+                    message = ALREADY_IN_GAME    
+                }
+                else
+                {
+                    element.CurrentPlayers.push(userid)
+                    message = ""
+                    success = true
+                }
+            }
+        } 
+        
+    }, this);
+    
+    next(null, {
+        success: success,
+        message: message
     });
 };

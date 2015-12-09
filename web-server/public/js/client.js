@@ -232,12 +232,28 @@ $(document).ready(function() {
     //deal with listgame button click.
     $("#listgame").click(function () {
         var route = "game.gameHandler.list";
-        var city = $("#city").attr("value");
+        var city = $("#city_listgame").attr("value");
         
         pomelo.request(route, {
             city: city
         }, function (data) {
             addOutput(data.games);
+        });
+    });
+	    
+    //deal with joingame button click.
+    $("#joingame").click(function () {
+        var route = "game.gameHandler.join";
+        var gameid = $("#gameid").attr("value");
+        
+        pomelo.request(route, {
+            gameid: gameid,
+			userid: userid
+        }, function (data) {
+			if(!data.success)
+            {
+				addOutput(data.message);
+			}
         });
     });
 });

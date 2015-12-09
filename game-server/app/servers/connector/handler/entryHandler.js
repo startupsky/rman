@@ -50,7 +50,6 @@ var passLogin = function (user, app, session, next) {
 	if (!!sessionService.getByUid(userid)) {
 		next(null, {
 			code: ALREADY_LOGIN_CODE,
-			error: true
 		});
 		return;
 	}
@@ -101,7 +100,6 @@ handler.enter = function (msg, session, next) {
 						console.log("wrong password: " + userid)
 						next(null, {
 							code: WRONG_PASSWORD_CODE,
-							error: true
 						});
 						return;
 					}
