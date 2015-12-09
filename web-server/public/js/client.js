@@ -214,6 +214,7 @@ $(document).ready(function() {
         var gametype = $("#gameTypeList").attr("value");
 
         pomelo.request(route, {
+			userid: userid,
             gamename: gamename,
             maxplayer: maxplayer,
             city: city,
@@ -223,7 +224,7 @@ $(document).ready(function() {
 			y2: y2,
             gametype: gametype
         }, function (data) {
-            addOutput(data.msg);
+            addOutput("create game: "+ data.GameID + ", " + data.GameName);
         });
     });
     
@@ -236,7 +237,7 @@ $(document).ready(function() {
         pomelo.request(route, {
             city: city
         }, function (data) {
-            addOutput(data.msg);
+            addOutput(data.games);
         });
     });
 });
