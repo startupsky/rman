@@ -78,3 +78,18 @@
 	message: 已经加入这个游戏！
 }
 ```
+
+##LeaveGame
+###Request
+```
+{
+	gameid: gameid,
+	userid: userid
+}
+```
+###Response
+```
+{
+	success: false,
+	message: 不在这个游戏！
+}

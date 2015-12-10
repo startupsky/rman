@@ -167,7 +167,6 @@ $(document).ready(function() {
 		showLogin();
 	});
 
-	//deal with login button click.
 	$("#login").click(function() {
         userid = $("#loginUser").attr("value");
         var pwd = $("#password").attr("value");
@@ -201,7 +200,6 @@ $(document).ready(function() {
 		});
 	});
     
-    //deal with create game button click.
     $("#creategame").click(function () {
         var route = "game.gameHandler.create";
         var gamename = $("#gamename").attr("value");
@@ -228,8 +226,6 @@ $(document).ready(function() {
         });
     });
     
-    
-    //deal with listgame button click.
     $("#listgame").click(function () {
         var route = "game.gameHandler.list";
         var city = $("#city_listgame").attr("value");
@@ -241,7 +237,6 @@ $(document).ready(function() {
         });
     });
 	    
-    //deal with joingame button click.
     $("#joingame").click(function () {
         var route = "game.gameHandler.join";
         var gameid = $("#gameid").attr("value");
@@ -256,4 +251,19 @@ $(document).ready(function() {
 			}
         });
     });
+	
+    $("#leavegame").click(function () {
+        var route = "game.gameHandler.leave";
+        var gameid = $("#gameid").attr("value");
+        
+        pomelo.request(route, {
+            gameid: gameid,
+			userid: userid
+        }, function (data) {
+			if(!data.success)
+            {
+				addOutput(data.message);
+			}
+        });
+    });	
 });
