@@ -93,3 +93,19 @@
 	success: false,
 	message: 不在这个游戏！
 }
+```
+
+##StartGame
+###Request
+```
+{
+    gameid:gameid,
+}
+```
+###Response
+```
+{
+	success: false,
+	message: 不在这个游戏！
+}
+```
