@@ -205,8 +205,8 @@ $(document).ready(function() {
         var gamename = $("#gamename").attr("value");
         var maxplayer = $("#maxplayer").attr("value");
         var city = $("#city").attr("value")
-		var y1 = $("#x1").attr("value");
-        var x1 = $("#x1").attr("value");
+		var x1 = $("#x1").attr("value");
+        var y1 = $("#y1").attr("value");
         var x2 = $("#x2").attr("value");
 		var y2 = $("#y2").attr("value");
         var playerX = $("#playerx").attr("value")
@@ -226,7 +226,13 @@ $(document).ready(function() {
 			y2: y2,
             gametype: gametype
         }, function (data) {
-            addOutput("create game: "+ data.GameID + ", " + data.GameName);
+			if(!data.sucess)
+            {
+				addOutput(data.message);
+			}
+            else{
+                addOutput(data.game);
+            }
         });
     });
     
@@ -249,7 +255,7 @@ $(document).ready(function() {
         pomelo.request(route, {
             gameid: gameid,
 			userid: userid,
-            playerx: playerx,
+            playerx: playerX,
             playery:playerY
         }, function (data) {
 			if(!data.success)
@@ -306,5 +312,28 @@ $(document).ready(function() {
             }
         });
     });	
+     
+         
+    $("#report").click(function () {
+        var route = "game.gameHandler.report";
+        var x = $("#playerx").attr("value");
+        var y = $("#playery").attr("value");
         
+        pomelo.request(route, {
+			userid: userid,
+            x:x,
+            y:y
+        }, function (data) {
+			addOutput(data.player)
+        });
+    });	   
+             
+    $("#reportalluser").click(function () {
+        var route = "game.gameHandler.reportalluser";
+       
+        pomelo.request(route, {
+        }, function (data) {
+			addOutput(data.players)
+        });
+    });	
 });

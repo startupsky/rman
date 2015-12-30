@@ -26,13 +26,15 @@ var currentgameid = 0;
 
 var games = new Map()
 var maps = new Map()
+var players = new Map()
 
-
-function Player(userid, x, y)
+function Player(userid, x, y, gameid)
 {
     this.X = x
     this.Y = y
     this.Userid = userid
+    this.GameID = gameid.toString()
+    this.Score = 0
 }
 
 function Cell(x,y,role)
@@ -48,7 +50,7 @@ function GameMap(row, column, grid) {
     this.Grid = grid
 }
 
-function Game(userid, playerx, playery, gamename, maxplayer, city, x1, y1, x2, y2, gametype) {
+function Game(userid, gamename, maxplayer, city, x1, y1, x2, y2, gametype) {
     currentgameid = currentgameid + 1;
     this.ID = currentgameid;
     this.GameName = gamename;
@@ -61,8 +63,7 @@ function Game(userid, playerx, playery, gamename, maxplayer, city, x1, y1, x2, y
     this.GameType = gametype;
     this.Host = userid
     this.CurrentPlayers = []
-    var user = new Player(userid,playerx,playery)
-    this.CurrentPlayers.push(user)
+    this.CurrentPlayers.push(userid)
     this.State = GAME_STATE_WAITING
     
 }
@@ -87,47 +88,94 @@ function SetupMap(game){
     
     for(var i = 0; i<game.CurrentPlayers.length;i++)
     {
-        var player = game.CurrentPlayers[i]
-        var cellindex = 0
-        if(player.X > game.X1 && player.X < game.X2 && player.Y > game.Y1 && player.Y < game.Y2)
+        var userid = game.CurrentPlayers[i]
+        if(players.has(userid))
         {
-            var playerRow = Math.round( (player.X - game.X1)/distanceX)
-            var playerColumn =Math.round( (player.Y - game.Y1)/distanceY)
-            cellindex = playerRow*column + playerColumn
+            var player = players.get(userid)
+            var cellindex = 0
+            if(player.X > game.X1 && player.X < game.X2 && player.Y > game.Y1 && player.Y < game.Y2)
+            {
+                var playerRow = Math.round( (player.X - game.X1)/distanceX)
+                var playerColumn =Math.round( (player.Y - game.Y1)/distanceY)
+                cellindex = playerRow*column + playerColumn
+            }
+            while(cellgrid[cellindex].Role === "player"){
+                cellindex = (cellindex+1)%(row*column)
+            }
+            player.X = cellgrid[cellindex].X
+            player.Y = cellgrid[cellindex].Y
+            cellgrid[cellindex].Role = "player"            
         }
-        while(cellgrid[cellindex].Role === "player"){
-            cellindex = (cellindex+1)%(row*column)
-        }
-        player.X = cellgrid[cellindex].X
-        player.Y = cellgrid[cellindex].Y
-        cellgrid[cellindex].Role = "player"
     }
     var map = new GameMap(row, column, cellgrid)
     maps.set(game.ID.toString(), map)
 }
 
+function UpdateMap(gameid, userid)
+{
+	var distanceX = 0.5/11000.0 // 0.5m
+	var distanceY = distanceX	
+
+    var gamemap = maps.get(gameid)
+    var player = players.get(userid)
+
+    for(var i = 0; i<gamemap.Grid.length;i++)
+	{
+        var cell = gamemap.Grid[i]
+		if (cell.Role == "bean"){
+			var startX = cell.X - distanceX
+			var stopX = cell.X + distanceX
+			var startY = cell.Y - distanceY
+			var stopY = cell.Y + distanceY
+			
+			if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY){
+				console.log("UpdateMap: eat :[" +  cell.X + "][" + cell.Y + "]")
+				cell.Role = "empty"
+				player.Score = player.Score + 1
+			}			
+		}
+	}  
+}
+
 handler.create = function (msg, session, next) {
-    var smallx = msg.x1
-    var bigx = msg.x2
+    var smallx = parseFloat(msg.x1)
+    var bigx = parseFloat(msg.x2)
     if(smallx > bigx)
     {
-        var temp = smallx
+        var tempx = smallx
         smallx = bigx
-        bigx = temp
+        bigx = tempx
     }
-    var smally = msg.x1
-    var bigy = msg.x2
+    var smally = parseFloat(msg.y1)
+    var bigy = parseFloat(msg.y2)
     if(smally > bigy)
     {
-        var temp = smally
+        var tempy = smally
         smally = bigy
-        bigy = temp
+        bigy = tempy
     }
-    var game = new Game(msg.userid, msg.playerx, msg.playery, msg.gamename, msg.maxplayer, msg.city, smallx, smally, bigx, bigy, msg.gametype);
-    games.set(game.ID.toString(), game)
+    var sucess = true
+    var message = ""
+    var game
+    var userid = msg.userid
+    if(players.has(userid))
+    {
+        sucess = false
+        message = ALREADY_IN_GAME
+        game = games.get(players.get(userid).GameID)
+    }
+    else
+    {
+        game = new Game(msg.userid,msg.gamename, msg.maxplayer, msg.city, smallx, smally, bigx, bigy, msg.gametype);
+        var player = new Player(userid, parseFloat(msg.playerx), parseFloat(msg.playery), game.ID)
+        players.set(userid,player)
+        games.set(game.ID.toString(), game)
+    }
+
     next(null, {
-        GameID: game.ID,
-        GameName: game.GameName
+        sucess: sucess,
+        message: message,
+        game: JSON.stringify(game)
     });
 };
 
@@ -150,8 +198,8 @@ handler.list = function (msg, session, next) {
 handler.join = function (msg, session, next) {
     var gameid = msg.gameid
     var userid = msg.userid
-    var playerx = msg.playerx
-    var playery = msg.playery
+    var playerx = parseFloat(msg.playerx)
+    var playery = parseFloat(msg.playery)
     var success = false
     var message = GAME_NOT_FOUND
     if (games.has(gameid)) {
@@ -164,7 +212,7 @@ handler.join = function (msg, session, next) {
         {
             var found = false
             for (var i = 0; i < game.CurrentPlayers.length; i++) {
-                if (game.CurrentPlayers[i].Userid = userid) {
+                if (game.CurrentPlayers[i] === userid) {
                     found = true
                     break
                 }
@@ -173,8 +221,9 @@ handler.join = function (msg, session, next) {
                 message = ALREADY_IN_GAME
             }
             else {
-                var player = new Player(userid, playerx, playery)
-                game.CurrentPlayers.push(player)
+                var player = new Player(userid, playerx, playery, game.ID)
+                players.set(userid, player)
+                game.CurrentPlayers.push(userid)
                 message = ""
                 success = true
             }
@@ -200,7 +249,7 @@ handler.leave = function (msg, session, next) {
         var index = -1
         for(var i = 0;i<game.CurrentPlayers.length;i++)
         {
-            if(game.CurrentPlayers[i].Userid = userid)
+            if(game.CurrentPlayers[i] === userid)
             {
                 index = i
                 break
@@ -209,12 +258,13 @@ handler.leave = function (msg, session, next) {
         if (index > -1) {
             message = ""
             success = true
+            players.delete(userid)
             game.CurrentPlayers.splice(index, 1)
-            if (game.CurrentPlayers == 0) {
+            if (game.CurrentPlayers.length == 0) {
                 games.delete(game.ID)
             }
             else if (game.Host == userid) {
-                game.Host = game.CurrentPlayers[0].Userid
+                game.Host = game.CurrentPlayers[0]
             }
         }
         else {
@@ -285,5 +335,30 @@ handler.querymap = function (msg, session, next) {
         success: success,
         message: message,
         map: JSON.stringify(map)
+    });
+};
+
+
+handler.report = function (msg, session, next) {
+    var userid = msg.userid
+    var x = parseFloat(msg.x)
+    var y = parseFloat(msg.y)
+    var player
+    if(players.has(userid))
+    {
+        player = players.get(userid)
+        player.X = x
+        player.Y = y
+        UpdateMap(player.GameID, userid)
+    }
+
+    next(null, {
+        player: JSON.stringify(player)
+    });
+};
+
+handler.reportalluser = function (msg, session, next) {
+    next(null, {
+        players: JSON.stringify(Array.from(players.values()))
     });
 };

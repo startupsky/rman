@@ -133,3 +133,35 @@
 }
 
 ```
+
+##Report
+###Request
+```
+{
+	userid: userid,
+    x:x,
+    y:y
+}
+```
+###Response
+```
+{
+	player: player
+}
+
+```
+
+
+##ReportAllUser
+###Request
+```
+{
+}
+```
+###Response
+```
+{
+	players: players
+}
+
+```
