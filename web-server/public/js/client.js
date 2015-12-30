@@ -287,5 +287,24 @@ $(document).ready(function() {
 				addOutput(data.message);
 			}
         });
-    });	    
+    });	
+    
+    $("#querymap").click(function () {
+        var route = "game.gameHandler.querymap";
+        var gameid = $("#gameid").attr("value");
+        
+        pomelo.request(route, {
+            gameid: gameid,
+			userid: userid
+        }, function (data) {
+			if(!data.success)
+            {
+				addOutput(data.message);
+			}
+            else{
+                addOutput(data.map);
+            }
+        });
+    });	
+        
 });

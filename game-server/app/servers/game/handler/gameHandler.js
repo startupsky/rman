@@ -5,6 +5,7 @@ var ALREADY_IN_GAME = "已经加入这个游戏！";
 var NOT_IN_GAME = "不在这个游戏！";
 var NOT_HOST_IN_GAME = "不是游戏创建者！";
 var GAME_NOT_READY = "游戏状态不能开始！";
+var GAME_NOT_STARTED = "游戏没有开始！";
 
 var GAME_STATE_WAITING = 0;
 var GAME_STATE_STARTED = 1;
@@ -23,6 +24,10 @@ var handler = Handler.prototype;
 
 var currentgameid = 0;
 var currentgames = [];
+
+var games = {}
+var maps = {}
+
 
 function Player(userid, x, y)
 {
@@ -93,6 +98,7 @@ function SetupMap(game){
         cellgrid[cellindex].Role = "player"
     }
     game.Grid = cellgrid
+    maps[game.ID] = cellgrid
 }
 
 handler.create = function (msg, session, next) {
@@ -114,6 +120,7 @@ handler.create = function (msg, session, next) {
     }
     var game = new Game(msg.userid, msg.playerx, msg.playery, msg.gamename, msg.maxplayer, msg.city, smallx, smally, bigx, bigy, msg.gametype);
     currentgames.push(game);
+    games[game.ID] = game
     next(null, {
         GameID: game.ID,
         GameName: game.GameName
@@ -251,5 +258,33 @@ handler.start = function (msg, session, next) {
     next(null, {
         success: success,
         message: message
+    });
+};
+
+
+handler.querymap = function (msg, session, next) {
+    var gameid = msg.gameid
+    var success = false
+    var message = GAME_NOT_FOUND
+
+    if(gameid in games)
+    {
+        var game = games[gameid]
+        if(game.State === GAME_STATE_STARTED)
+        {
+            var map = maps[gameid]
+            success = true
+            message = ""
+        }
+        else
+        {
+            message = GAME_NOT_STARTED
+        }
+    }
+
+    next(null, {
+        success: success,
+        message: message,
+        map: JSON.stringify(map)
     });
 };

@@ -100,12 +100,29 @@
 ```
 {
     gameid:gameid,
+	userid: userid
 }
 ```
 ###Response
 ```
 {
 	success: false,
-	message: 不在这个游戏！
+	message: 不是游戏创建者！
+}
+```
+
+##QueryMap
+###Request
+```
+{
+    gameid:gameid,
+	userid: userid
+}
+```
+###Response
+```
+{
+	success: false,
+	message: 游戏没有开始！
 }
 ```
