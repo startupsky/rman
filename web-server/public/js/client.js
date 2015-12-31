@@ -336,4 +336,16 @@ $(document).ready(function() {
 			addOutput(data.players)
         });
     });	
+                 
+    $("#stopgame").click(function () {
+        var route = "game.gameHandler.stop";
+       var gameid = $("#gameid").attr("value");
+       
+        pomelo.request(route, {
+            userid:userid,
+            gameid:gameid
+        }, function (data) {
+			addOutput(data.players)
+        });
+    });	
 });

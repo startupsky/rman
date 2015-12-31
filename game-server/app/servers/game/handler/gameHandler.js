@@ -311,6 +311,36 @@ handler.start = function (msg, session, next) {
 };
 
 
+handler.stop = function (msg, session, next) {
+    var gameid = msg.gameid
+    var userid = msg.userid
+    var success = false
+    var message = GAME_NOT_FOUND
+
+    if(games.has(gameid))
+    {
+        var game = games.get(gameid)
+        if (userid === game.Host) {
+            if (game.State === GAME_STATE_STARTED) {
+                success = true
+                message = ""
+                game.State = GAME_STATE_STOPPED
+            }
+            else {
+                message = GAME_NOT_STARTED
+            }
+        }
+        else {
+            message = NOT_HOST_IN_GAME
+        }        
+    }
+
+    next(null, {
+        success: success,
+        message: message
+    });
+};
+
 handler.querymap = function (msg, session, next) {
     var gameid = msg.gameid
     var success = false

@@ -165,3 +165,20 @@
 }
 
 ```
+
+##StopGame
+###Request
+```
+{
+    userid:userid,
+    gameid:gameid
+}
+```
+###Response
+```
+{
+	success: false,
+	message: 游戏没有开始！
+}
+
+```
