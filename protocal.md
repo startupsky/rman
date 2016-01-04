@@ -1,5 +1,22 @@
 #Game
 
+##Constants
+
+```
+var GAME_NOT_FOUND = "没有这个游戏！";
+var GAME_FULL = "游戏人数已满！";
+var GAME_STARTED = "游戏状态不是等待！";
+var ALREADY_IN_GAME = "已经加入这个游戏！";
+var NOT_IN_GAME = "不在这个游戏！";
+var NOT_HOST_IN_GAME = "不是游戏创建者！";
+var GAME_NOT_READY = "游戏状态不能开始！";
+var GAME_NOT_STARTED = "游戏没有开始！";
+
+var GAME_STATE_WAITING = 0;
+var GAME_STATE_STARTED = 1;
+var GAME_STATE_STOPPED = 2;
+```
+
 ##CreateGame
 ###Request
 

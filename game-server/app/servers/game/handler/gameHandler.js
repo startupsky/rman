@@ -35,6 +35,7 @@ function Player(userid, x, y, gameid)
     this.Userid = userid
     this.GameID = gameid.toString()
     this.Score = 0
+    this.Role = "pacman"
 }
 
 function Cell(x,y,role)
@@ -310,6 +311,26 @@ handler.start = function (msg, session, next) {
     });
 };
 
+var MongoClient = require('mongodb').MongoClient;
+var url = 'mongodb://localhost:27017/rman';
+
+function SaveUserInfo(userid)
+{
+    var player = players.get(userid)
+   
+    MongoClient.connect(url, function (err, db) {
+        var collection = db.collection('User');
+        var result = collection.find({"name": userid}, {"score":1,"_id":0})
+        result.each(function(err, doc) {
+            if (doc != null) {
+                var newscore = parseInt(doc.score) + player.Score
+                console.log(newscore);
+                collection.update({'name':userid},{$set:{'score':newscore}})
+            } 
+            db.close();
+        });
+    });     
+}
 
 handler.stop = function (msg, session, next) {
     var gameid = msg.gameid
@@ -325,6 +346,7 @@ handler.stop = function (msg, session, next) {
                 success = true
                 message = ""
                 game.State = GAME_STATE_STOPPED
+                SaveUserInfo(userid)
             }
             else {
                 message = GAME_NOT_STARTED

@@ -18,7 +18,7 @@ var addUser = function (db, userid, password, callback) {
 	var collection = db.collection('User');
 	collection.insertMany([
 		{
-			name: userid, password: password, displayname: userid
+			name: userid, password: password, displayname: userid, score: 0
 		}
 	], function (err, result) {
 		if (err != null) {
