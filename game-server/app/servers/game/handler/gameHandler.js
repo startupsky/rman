@@ -112,6 +112,18 @@ function SetupMap(game){
     maps.set(game.ID.toString(), map)
 }
 
+function NotifyGameStart(gameid, app)
+{
+    var channelService = app.get('channelService');
+	var param = {
+        route: 'onStart',
+		msg: "hehe"
+	};
+	var channel = channelService.getChannel(gameid, true);
+    channel.pushMessage(param);
+	
+}
+
 function UpdateMap(gameid, userid)
 {
 	var distanceX = 0.5/11000.0 // 0.5m
@@ -171,6 +183,17 @@ handler.create = function (msg, session, next) {
         var player = new Player(userid, parseFloat(msg.playerx), parseFloat(msg.playery), game.ID)
         players.set(userid,player)
         games.set(game.ID.toString(), game)
+        
+        // create channel for this game
+        // var channelService = this.app.get('channelService');
+        // var channel = channelService.getChannel(game.ID, true);
+        // console.log(channel)
+        // channel.add(userid, this.app.get('serverId'))
+        
+        //put user into channel
+        //this.app.rpc.game.gameRemote.add(session, userid, this.app.get('serverId'), game.ID, true);
+        
+        //this.app.rpc.chat.chatRemote.add(session, )
     }
 
     next(null, {
@@ -227,6 +250,16 @@ handler.join = function (msg, session, next) {
                 game.CurrentPlayers.push(userid)
                 message = ""
                 success = true
+                
+                        
+                //put user into channel
+                //this.app.rpc.game.gameRemote.add(session, userid, this.app.get('serverId'), game.ID, true);
+        
+                // var channelService = this.app.get('channelService');
+                // var channel = channelService.getChannel(game.ID, false);
+                // console.log(channel)
+                // channel.pushMessage({route: 'onJoin',user: userid})
+                // channel.add(userid, this.app.get('serverId'))
             }
         }
     }
@@ -295,6 +328,7 @@ handler.start = function (msg, session, next) {
                 message = ""
                 game.State = GAME_STATE_STARTED
                 SetupMap(game)
+                //NotifyGameStart(game.ID, this.app)
             }
             else {
                 message = GAME_NOT_READY
@@ -324,7 +358,6 @@ function SaveUserInfo(userid)
         result.each(function(err, doc) {
             if (doc != null) {
                 var newscore = parseInt(doc.score) + player.Score
-                console.log(newscore);
                 collection.update({'name':userid},{$set:{'score':newscore}})
             } 
             db.close();

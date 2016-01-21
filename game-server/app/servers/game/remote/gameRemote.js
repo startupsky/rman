@@ -16,20 +16,17 @@ var GameRemote = function(app) {
  * @param {boolean} flag channel parameter
  *
  */
-GameRemote.prototype.add = function(uid, sid, name, flag, cb) {
+GameRemote.prototype.add = function(uid, sid, name, flag) {
 	var channel = this.channelService.getChannel(name, flag);
-	var username = uid.split('*')[0];
 	var param = {
-		route: 'onAdd',
-		user: username
+		route: 'onJoin',
+		user: uid
 	};
 	channel.pushMessage(param);
 
 	if( !! channel) {
 		channel.add(uid, sid);
 	}
-
-	cb(this.get(name, flag));
 };
 
 /**

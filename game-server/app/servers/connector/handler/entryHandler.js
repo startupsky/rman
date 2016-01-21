@@ -55,18 +55,10 @@ var passLogin = function (user, app, session, next) {
 	}
 
 	session.bind(userid);
-	session.set('rid', userid);
-	session.push('rid', function (err) {
-		if (err) {
-			console.error('set rid for session service failed! error is : %j', err.stack);
-		}
-	});
 	session.on('closed', onUserLeave.bind(null, app));
 
-	//put user into channel
-	var uid = userid
-	var rid = "gameid"
-	app.rpc.chat.chatRemote.add(session, uid, app.get('serverId'), rid, true, function (users) {
+	//put user into global channel
+	app.rpc.chat.chatRemote.add(session, userid, app.get('serverId'), "rmangame", true, function (users) {
 		next(null, {
 			displayname: user.displayname,
 			users: users
@@ -126,5 +118,5 @@ var onUserLeave = function (app, session) {
 	if (!session || !session.uid) {
 		return;
 	}
-	app.rpc.chat.chatRemote.kick(session, session.uid, app.get('serverId'), session.get('rid'), null);
+	app.rpc.chat.chatRemote.kick(session, session.uid, app.get('serverId'), "rmangame", null);
 };

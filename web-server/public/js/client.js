@@ -150,17 +150,23 @@ $(document).ready(function() {
 	//update user list
 	pomelo.on('onAdd', function(data) {
 		var user = data.user;
-		tip('online', user);
-		addUser(user);
+		alert("add: " + user);
 	});
 
 	//update user list
 	pomelo.on('onLeave', function(data) {
 		var user = data.user;
-		tip('offline', user);
-		removeUser(user);
+		alert("leave: " + user);
 	});
 
+    pomelo.on("onJoin", function(data) {
+		var user = data.user;
+		alert("join: " + user);
+	});
+    
+    pomelo.on('onStart', function(data){
+        alert("game started!")
+    })
 
 	//handle disconect message, occours when the client is disconnect with servers
 	pomelo.on('disconnect', function(reason) {
@@ -348,4 +354,6 @@ $(document).ready(function() {
 			addOutput(data.players)
         });
     });	
+             
+    
 });
