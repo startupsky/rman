@@ -66,7 +66,9 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 		"Y2":"4",
 		"GameType":"pacman",
 		"Host":"dxu",
-		"CurrentPlayers":["dxu"]
+		"CurrentPlayers":["dxu"],
+        "State":0,
+        "Distance":null
 	},
 	{
 		"ID":2,
@@ -79,7 +81,9 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 		"Y2":"14",
 		"GameType":"pacman",
 		"Host":"fli",
-		"CurrentPlayers":["fli"]
+		"CurrentPlayers":["fli"],
+        "State":0,
+        "Distance":null
 	},
 ```
 
