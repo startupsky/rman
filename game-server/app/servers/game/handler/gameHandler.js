@@ -205,14 +205,28 @@ handler.create = function (msg, session, next) {
 
 
 handler.list = function (msg, session, next) {
-    var city = msg.city;
+    var city = msg.city;  
     var gamesincity = [];
     for (var game of games.values()) {
         if (city == "-1" || city == game.City) {
             gamesincity.push(game)
         }
     }
+    
 
+    if(!!msg.X && !!msg.Y)
+    {
+        var x = parseFloat(msg.X);
+        var y = parseFloat(msg.Y);
+        if(!isNaN(x) && !isNaN(y))
+        {
+            gamesincity.sort(function(a, b){
+                var distance1 = ((a.X1 + a.X2)/2 - x)^2 + ((a.Y1 + a.Y2)/2-y)^2
+                var distance2 = ((b.X1 + b.X2)/2 - x)^2 + ((b.Y1 + b.Y2)/2-y)^2
+                return distance2 - distance1
+            })
+        }
+    }
     next(null, {
         games: JSON.stringify(gamesincity)
     });

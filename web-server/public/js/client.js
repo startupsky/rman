@@ -249,9 +249,12 @@ $(document).ready(function() {
     $("#listgame").click(function () {
         var route = "game.gameHandler.list";
         var city = $("#city_listgame").attr("value");
-        
+        var x = $("#x_listgame").attr("value")
+        var y = $("#y_listgame").attr("value")
         pomelo.request(route, {
-            city: city
+            city: city,
+            X: x,
+            Y: y
         }, function (data) {
             addOutput(data.games);
         });

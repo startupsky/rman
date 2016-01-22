@@ -46,10 +46,13 @@ var GAME_STATE_STOPPED = 2;
 ###Request
 ```
 {
-	city: city
+	city: city,
+    X: x,
+    Y: y
 }
 ```
 ###Response
+Sort by the distance to x,y. If X or Y is not given, then no sort will be performed.
 ```
 [
 	{
