@@ -159,6 +159,10 @@ $(document).ready(function() {
 		alert("leave: " + user);
 	});
 
+    pomelo.on('onChat', function(data){
+        alert("From: " + data.from + ", Msg: " + data.msg)
+    })
+    
     pomelo.on("onJoin", function(data) {
 		var user = data.user;
 		alert("join: " + user);
@@ -354,6 +358,22 @@ $(document).ready(function() {
 			addOutput(data.players)
         });
     });	
-             
+                 
+    $("#send").click(function () {
+        var msg = $("#msg").attr("value");
+        var target = $("#target").attr("value");
+
+		var route = "chat.chatHandler.send";
+
+		if(!util.isBlank(msg)) {
+			pomelo.request(route, {
+				rid: "rmangame",
+				content: msg,
+				from: userid,
+				target: target
+			}, function(data) {
+			});
+		}
+    });	             
     
 });

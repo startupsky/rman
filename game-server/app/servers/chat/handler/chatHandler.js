@@ -19,7 +19,8 @@ var handler = Handler.prototype;
  *
  */
 handler.send = function(msg, session, next) {
-	var rid = session.get('rid');
+  
+	var rid = msg.rid;
 	var username = session.uid.split('*')[0];
 	var channelService = this.app.get('channelService');
 	var param = {
@@ -27,7 +28,7 @@ handler.send = function(msg, session, next) {
 		from: username,
 		target: msg.target
 	};
-	channel = channelService.getChannel(rid, false);
+	var channel = channelService.getChannel(rid, false);
 
 	//the target is all users
 	if(msg.target == '*') {
