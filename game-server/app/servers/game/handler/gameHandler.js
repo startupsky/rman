@@ -66,7 +66,7 @@ function Game(userid, gamename, maxplayer, city, x1, y1, x2, y2, gametype) {
     this.CurrentPlayers = []
     this.CurrentPlayers.push(userid)
     this.State = GAME_STATE_WAITING
-    
+    this.Distance = NaN
 }
 
 function SetupMap(game){
@@ -220,16 +220,28 @@ handler.list = function (msg, session, next) {
         var y = parseFloat(msg.Y);
         if(!isNaN(x) && !isNaN(y))
         {
+            for(var game of gamesincity)
+            {
+                if(game.X1 <= x && game.X2>=x && game.Y1<=y&&game.Y2>=y)
+                {
+                    game.Distance = 0;
+                }
+                else
+                {
+                    game.Distance = Math.sqrt((Math.pow((game.X1 + game.X2)/2 - x,2) + Math.pow((game.Y1 + game.Y2)/2-y, 2)))
+                }
+            }
             gamesincity.sort(function(a, b){
-                var distance1 = ((a.X1 + a.X2)/2 - x)^2 + ((a.Y1 + a.Y2)/2-y)^2
-                var distance2 = ((b.X1 + b.X2)/2 - x)^2 + ((b.Y1 + b.Y2)/2-y)^2
-                return distance2 - distance1
+                return a.Distance - b.Distance
             })
         }
     }
     next(null, {
         games: JSON.stringify(gamesincity)
     });
+    for (var game of games.values()) {
+        game.Distance = NaN
+    }    
 };
 
 
