@@ -6,6 +6,7 @@ var NOT_IN_GAME = "不在这个游戏！";
 var NOT_HOST_IN_GAME = "不是游戏创建者！";
 var GAME_NOT_READY = "游戏状态不能开始！";
 var GAME_NOT_STARTED = "游戏没有开始！";
+var USER_NOT_IN_GAME = "游戏中没有这个用户！";
 
 var GAME_STATE_WAITING = 0;
 var GAME_STATE_STARTED = 1;
@@ -25,6 +26,7 @@ var currentgameid = 0;
 var games = new Map()
 var maps = new Map()
 var players = new Map()
+var channels = new Map()
 
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017/rman';
@@ -130,18 +132,6 @@ function SetupMap(game){
     maps.set(game.ID.toString(), map)
 }
 
-function NotifyGameStart(gameid, app)
-{
-    var channelService = app.get('channelService');
-	var param = {
-        route: 'onStart',
-		msg: "hehe"
-	};
-	var channel = channelService.getChannel(gameid, true);
-    channel.pushMessage(param);
-	
-}
-
 function UpdateMap(gameid, userid)
 {
 	var distanceX = 0.5/11000.0 // 0.5m
@@ -168,9 +158,7 @@ function UpdateMap(gameid, userid)
 	}  
 }
 
-GameRemote.prototype.create = function (msg, next) {
-    console.log(msg)
-    
+GameRemote.prototype.create = function (msg, serverid, next) { 
     var smallx = parseFloat(msg.x1)
     var bigx = parseFloat(msg.x2)
     if(smallx > bigx)
@@ -199,21 +187,16 @@ GameRemote.prototype.create = function (msg, next) {
     }
     else
     {
-        game = new Game(msg.userid,msg.gamename, msg.maxplayer, msg.city, smallx, smally, bigx, bigy, msg.gametype);
+        game = new Game(msg.userid,msg.gamename, msg.maxplayer, msg.city, smallx, smally, bigx, bigy, msg.gametype)
+
+        // add channel
+        var channel = this.channelService.getChannel(this.ID, true);
+        channel.add(userid, serverid)
+        channels.set(game.ID.toString(), channel)
+    
         var player = new Player(userid, parseFloat(msg.playerx), parseFloat(msg.playery), game.ID)
         players.set(userid,player)
         games.set(game.ID.toString(), game)
-        
-        // create channel for this game
-        // var channelService = this.app.get('channelService');
-        // var channel = channelService.getChannel(game.ID, true);
-        // console.log(channel)
-        // channel.add(userid, this.app.get('serverId'))
-        
-        //put user into channel
-        //this.app.rpc.game.gameRemote.add(session, userid, this.app.get('serverId'), game.ID, true);
-        
-        //this.app.rpc.chat.chatRemote.add(session, )
     }
 
     next(null, {
@@ -263,7 +246,7 @@ GameRemote.prototype.list = function (msg, next) {
     }    
 };
 
-GameRemote.prototype.join = function (msg, next) {
+GameRemote.prototype.join = function (msg, serverid, next) {
     var gameid = msg.gameid
     var userid = msg.userid
     var playerx = parseFloat(msg.playerx)
@@ -292,18 +275,11 @@ GameRemote.prototype.join = function (msg, next) {
                 var player = new Player(userid, playerx, playery, game.ID)
                 players.set(userid, player)
                 game.CurrentPlayers.push(userid)
+                var channel = channels.get(gameid)
+                channel.pushMessage('onJoin', {user:userid});
+                channel.add(userid, serverid)
                 message = ""
                 success = true
-                
-                        
-                //put user into channel
-                //this.app.rpc.game.gameRemote.add(session, userid, this.app.get('serverId'), game.ID, true);
-        
-                // var channelService = this.app.get('channelService');
-                // var channel = channelService.getChannel(game.ID, false);
-                // console.log(channel)
-                // channel.pushMessage({route: 'onJoin',user: userid})
-                // channel.add(userid, this.app.get('serverId'))
             }
         }
     }
@@ -314,7 +290,7 @@ GameRemote.prototype.join = function (msg, next) {
     });
 };
 
-GameRemote.prototype.leave = function (msg, next) {
+GameRemote.prototype.leave = function (msg, serverid, next) {
     var gameid = msg.gameid
     var userid = msg.userid
     var success = false
@@ -337,8 +313,12 @@ GameRemote.prototype.leave = function (msg, next) {
             success = true
             players.delete(userid)
             game.CurrentPlayers.splice(index, 1)
+            var channel = channels.get(gameid)
+            channel.leave(userid, serverid)
+            channel.pushMessage('onLeave', {user:userid});
             if (game.CurrentPlayers.length == 0) {
-                games.delete(game.ID)
+                games.delete(gameid)
+                channels.delete(gameid)
             }
             else if (game.Host == userid) {
                 game.Host = game.CurrentPlayers[0]
@@ -370,7 +350,8 @@ GameRemote.prototype.start = function (msg, next) {
                 message = ""
                 game.State = GAME_STATE_STARTED
                 SetupMap(game)
-                //NotifyGameStart(game.ID, this.app)
+                var channel = channels.get(gameid)
+                channel.pushMessage('onStart', {user:userid});
             }
             else {
                 message = GAME_NOT_READY
@@ -469,67 +450,35 @@ GameRemote.prototype.reportalluser = function (msg, next) {
     });
 };
 
-/**
- * Add user into chat channel.
- *
- * @param {String} uid unique id for user
- * @param {String} sid server id
- * @param {String} name channel name
- * @param {boolean} flag channel parameter
- *
- */
-GameRemote.prototype.add = function(uid, sid, name, flag) {
-	var channel = this.channelService.getChannel(name, flag);
-	var param = {
-		route: 'onJoin',
-		user: uid
-	};
-	channel.pushMessage(param);
-
-	if( !! channel) {
-		channel.add(uid, sid);
-	}
-};
-
-/**
- * Get user from chat channel.
- *
- * @param {Object} opts parameters for request
- * @param {String} name channel name
- * @param {boolean} flag channel parameter
- * @return {Array} users uids in channel
- *
- */
-GameRemote.prototype.get = function(name, flag) {
-	var users = [];
-	var channel = this.channelService.getChannel(name, flag);
-	if( !! channel) {
-		users = channel.getMembers();
-	}
-	for(var i = 0; i < users.length; i++) {
-		users[i] = users[i].split('*')[0];
-	}
-	return users;
-};
-
-/**
- * Kick user out chat channel.
- *
- * @param {String} uid unique id for user
- * @param {String} sid server id
- * @param {String} name channel name
- *
- */
-GameRemote.prototype.kick = function(uid, sid, name) {
-	var channel = this.channelService.getChannel(name, false);
-	// leave channel
-	if( !! channel) {
-		channel.leave(uid, sid);
-	}
-	var username = uid.split('*')[0];
-	var param = {
-		route: 'onLeave',
-		user: username
-	};
-	channel.pushMessage(param);
+GameRemote.prototype.send = function(msg, next) {
+    var gameid = msg.gameid
+    
+    if(games.has(gameid))
+    {
+        var param = {
+            msg: msg.content,
+            from: msg.from,
+            target: msg.target
+        };
+        var channel = channels.get(gameid)
+        var receivers = []
+        if(msg.target == '*') {
+            channel.pushMessage('onChat', param);
+        }
+        else
+        {
+            var member = channel.getMember(msg.target)
+            if(!!member)
+            {
+                receivers.push({
+                    uid: member.uid,
+                    sid: member.sid                        
+                })
+                channel.pushMessageByUids('onChat', param, receivers);                            
+            }
+        }
+        next(null, {
+        });        
+    }
+	
 };

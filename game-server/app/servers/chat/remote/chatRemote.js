@@ -1,3 +1,5 @@
+var USER_NOT_FOUND = "没有这个用户！";
+
 module.exports = function(app) {
 	return new ChatRemote(app);
 };
@@ -73,4 +75,42 @@ ChatRemote.prototype.kick = function(uid, sid, name) {
 		user: username
 	};
 	channel.pushMessage(param);
+};
+
+ChatRemote.prototype.send = function(msg, next) {
+	var rid = msg.rid;
+	var channelService = this.app.get('channelService');
+	var param = {
+		msg: msg.content,
+		from: msg.from,
+		target: msg.target
+	};
+	var channel = channelService.getChannel(rid, false);
+
+    var sucess = true
+    var data = ""
+	//the target is all users
+	if(msg.target == '*') {
+		channel.pushMessage('onChat', param);
+	}
+	//the target is specific user
+	else
+    {
+        var member = channel.getMember(msg.target)
+        if(!!member)
+        {
+            channelService.pushMessageByUids('onChat', param, [{
+                uid: member.uid,
+                sid: member.sid
+            }]);            
+        }
+        {
+            sucess = false
+            data = USER_NOT_FOUND
+        }
+	}
+	next(null, {
+		sucess: sucess,
+        data: data
+	});
 };

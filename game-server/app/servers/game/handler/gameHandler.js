@@ -11,7 +11,7 @@ var handler = Handler.prototype;
 
 
 handler.create = function (msg, session, next) {
-    this.app.rpc.game.gameRemote.create(session, msg, next);
+    this.app.rpc.game.gameRemote.create(session, msg, session.frontendId, next);
 };
 
 
@@ -21,12 +21,12 @@ handler.list = function (msg, session, next) {
 
 
 handler.join = function (msg, session, next) {
-    this.app.rpc.game.gameRemote.join(session, msg, next);
+    this.app.rpc.game.gameRemote.join(session, msg, session.frontendId, next);
 };
 
 
 handler.leave = function (msg, session, next) {
-    this.app.rpc.game.gameRemote.leave(session, msg, next);
+    this.app.rpc.game.gameRemote.leave(session, msg, session.frontendId, next);
 };
 
 
@@ -49,4 +49,8 @@ handler.report = function (msg, session, next) {
 
 handler.reportalluser = function (msg, session, next) {
     this.app.rpc.game.gameRemote.reportalluser(session, msg, next);
+};
+
+handler.send = function (msg, session, next) {
+    this.app.rpc.game.gameRemote.send(session, msg, next);
 };
