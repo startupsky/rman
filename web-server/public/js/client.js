@@ -171,7 +171,15 @@ $(document).ready(function() {
     pomelo.on('onStart', function(data){
         alert("game started!")
     })
-
+    
+    pomelo.on('onPlayerUpdate', function(data){
+        alert("onPlayerUpdate:" + JSON.stringify(data))
+    })
+        
+    pomelo.on('onMapUpdate', function(data){
+        alert("onMapUpdate!" + JSON.stringify(data))
+    })
+    
 	//handle disconect message, occours when the client is disconnect with servers
 	pomelo.on('disconnect', function(reason) {
 		showLogin();

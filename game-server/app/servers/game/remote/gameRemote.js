@@ -151,6 +151,8 @@ function UpdateMap(gameid, userid)
 			
 			if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY){
 				console.log("UpdateMap: eat :[" +  cell.X + "][" + cell.Y + "]")
+                var channel = channels.get(gameid)
+                channel.pushMessage('onMapUpdate', {x:cell.X, y:cell.Y, role: "empty"});
 				cell.Role = "empty"
 				player.Score = player.Score + 1
 			}			
@@ -436,6 +438,8 @@ GameRemote.prototype.report = function (msg, next) {
         player = players.get(userid)
         player.X = x
         player.Y = y
+        var channel = channels.get(player.GameID)
+        channel.pushMessage('onPlayerUpdate', {x:player.X,y:player.Y});
         UpdateMap(player.GameID, userid)
     }
 
