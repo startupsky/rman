@@ -51,6 +51,10 @@ handler.reportalluser = function (msg, session, next) {
     this.app.rpc.game.gameRemote.reportalluser(session, msg, next);
 };
 
+handler.reportusersforgame = function (msg, session, next){
+    this.app.rpc.game.gameRemote.reportusersforgame(session, msg, next);
+}
+
 handler.send = function (msg, session, next) {
     this.app.rpc.game.gameRemote.send(session, msg, next);
 };

@@ -453,6 +453,19 @@ GameRemote.prototype.reportalluser = function (msg, next) {
         players: JSON.stringify(Array.from(players.values()))
     });
 };
+                    
+GameRemote.prototype.reportusersforgame = function (msg, next){
+    var gameid = msg.gameid
+    var game
+    
+    if(games.has(gameid))
+    {
+        game = games.get(gameid)
+    }
+    next(null, {
+        players: JSON.stringify(Array.from(game.CurrentPlayers.values()))
+    })
+}
 
 GameRemote.prototype.send = function(msg, next) {
     var gameid = msg.gameid
