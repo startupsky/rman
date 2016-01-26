@@ -456,14 +456,21 @@ GameRemote.prototype.reportalluser = function (msg, next) {
                     
 GameRemote.prototype.reportusersforgame = function (msg, next){
     var gameid = msg.gameid
-    var game
+    var success = false
+    var message = GAME_NOT_FOUND
+    var players = ""
     
     if(games.has(gameid))
     {
-        game = games.get(gameid)
+        success = true
+        message = ""
+        var game = games.get(gameid)
+        players = JSON.stringify(game.CurrentPlayers)
     }
     next(null, {
-        players: JSON.stringify(Array.from(game.CurrentPlayers.values()))
+        success: success,
+        message: message,
+        players: players
     })
 }
 

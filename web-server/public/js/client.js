@@ -385,7 +385,8 @@ $(document).ready(function() {
 			}, function(data) {
 			});
 		}
-    });	             
+    });	  
+               
     $("#gamesend").click(function () {
         var msg = $("#gamemsg").attr("value");
         var target = $("#gametarget").attr("value");
@@ -403,6 +404,17 @@ $(document).ready(function() {
             });
         }
     });	
+    
+    $("#reportusersforgame").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var route = "game.gameHandler.reportusersforgame";
+        pomelo.request(route, {
+            gameid: gameid
+        }, function(data) {
+            addOutput(data.players)
+        });
+    });	
+    
 });
 
                      
