@@ -177,13 +177,13 @@ GameRemote.prototype.create = function (msg, serverid, next) {
         smally = bigy
         bigy = tempy
     }
-    var sucess = true
+    var success = true
     var message = ""
     var game
     var userid = msg.userid
     if(players.has(userid))
     {
-        sucess = false
+        success = false
         message = ALREADY_IN_GAME
         game = games.get(players.get(userid).GameID)
     }
@@ -202,7 +202,7 @@ GameRemote.prototype.create = function (msg, serverid, next) {
     }
 
     next(null, {
-        sucess: sucess,
+        success: success,
         message: message,
         game: JSON.stringify(game)
     });
