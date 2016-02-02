@@ -1,4 +1,4 @@
-var cv = require('../node-opencv/lib/opencv');
+var cv = require('../opencv/lib/opencv');
 
 cv.readImage('2.jpg', function(err, im) {
   if (err) throw err;
