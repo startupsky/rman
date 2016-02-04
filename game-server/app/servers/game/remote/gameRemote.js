@@ -87,11 +87,42 @@ function GameObject(id, x, y, role, displayname, state)
     this.State = state
 }
 
-function SetupMap(game){
+function SetupMap(game, channelService){
     var distanceX = 2.0/11000.0 // 2m
     var distanceY = 2.0/11000.0 // 2m
     
     var gomap = new Map();
+    
+    // assign role for players
+    // assume pacman:ghost = 3
+    var ratio = 3
+    for (var i = 0; i < game.CurrentPlayers.length; i++) 
+    {
+        var userid = game.CurrentPlayers[i]
+        if (players.has(userid)) 
+        {
+            var player = players.get(userid)
+            var playergoid = "player_" + userid
+            var role = "pacman"
+            if (i % (ratio + 1) == 0)
+                role = "ghost"
+            
+            var channel = channels.get(game.ID.toString())
+            var member = channel.getMember(userid)
+            if(!!member)
+            {
+                var receivers = []
+                receivers.push({
+                    uid: member.uid,
+                    sid: member.sid                        
+                })
+                var param = {role: role, instruction: "your role is to ..."}
+                channelService.pushMessageByUids('onRoleAssigned', param, receivers);                            
+            }
+            var playergo = new GameObject(playergoid, player.X, player.Y, role, userid, "normal")
+            gomap.set(playergoid, playergo)
+        }
+    }
     
     var row = Math.round((game.Y2-game.Y1)/distanceY)
     var column = Math.round((game.X2 - game.X1)/distanceX)
@@ -123,23 +154,7 @@ function SetupMap(game){
             }
         }
     }
-    
-    // assume pacman:ghost = 3
-    var ratio = 3
-    for (var i = 0; i < game.CurrentPlayers.length; i++) 
-    {
-        var userid = game.CurrentPlayers[i]
-        if (players.has(userid)) 
-        {
-            var player = players.get(userid)
-            var playergoid = "player_" + userid
-            var role = "pacman"
-            if (i % (ratio + 1) == 0)
-                role = "ghost"
-            var playergo = new GameObject(playergoid, player.X, player.Y, role, userid, "normal")
-            gomap.set(playergoid, playergo)
-        }
-    }
+
     maps.set(game.ID.toString(), gomap)
 }
 
@@ -383,7 +398,7 @@ GameRemote.prototype.start = function (msg, next) {
                     success = true
                     message = ""
                     game.State = GAME_STATE_STARTED
-                    SetupMap(game)
+                    SetupMap(game, this.channelService)
                     var channel = channels.get(gameid)
                     channel.pushMessage('onStart', {user:userid});                    
                 }
@@ -535,7 +550,7 @@ GameRemote.prototype.send = function(msg, next) {
                     uid: member.uid,
                     sid: member.sid                        
                 })
-                channel.pushMessageByUids('onChat', param, receivers);                            
+                this.channelService.pushMessageByUids('onChat', param, receivers);                            
             }
         }
         next(null, {

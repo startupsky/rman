@@ -184,6 +184,11 @@ $(document).ready(function() {
         alert("onPlayerScore:" + JSON.stringify(data))
     })
     
+    pomelo.on('onRoleAssigned', function(data){
+        alert("onRoleAssigned:" + JSON.stringify(data))
+    })
+    
+    
 	//handle disconect message, occours when the client is disconnect with servers
 	pomelo.on('disconnect', function(reason) {
 		showLogin();
