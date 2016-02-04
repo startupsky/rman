@@ -153,7 +153,11 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 ```
 {
 	success: true,
-	map: {"Row":55,"Column":55,"Grid":[{"X":"10.00009090909090909090","Y":"10.00009090909090909090","Role":"player"},{"X":"10.00009090909090909090","Y":"10.00009090909090909090.0001818181818181818","Role":"bean"},...
+	map:  	
+    [["bean_0",{"GOID":"bean_0","X":1.0000909090909091,"Y":2.000090909090909,"Role":"bean","DisplayName":"bean","State":"normal"}], ...,
+    ["bean_8",{"GOID":"bean_8","X":1.0037272727272728,"Y":2.0037272727272724,"Role":"bean","DisplayName":"bean","State":"normal"}],
+    ["player_dxu",{"GOID":"player_dxu","X":1,"Y":2,"Role":"ghost","DisplayName":"dxu","State":"normal"}],
+    ["player_dxu2",{"GOID":"player_dxu2","X":1.005,"Y":2.005,"Role":"pacman","DisplayName":"dxu2","State":"normal"}]]
 }
 
 ```
