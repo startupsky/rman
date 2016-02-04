@@ -7,6 +7,7 @@ var NOT_HOST_IN_GAME = "不是游戏创建者！";
 var GAME_NOT_READY = "游戏状态不能开始！";
 var GAME_NOT_STARTED = "游戏没有开始！";
 var USER_NOT_IN_GAME = "游戏中没有这个用户！";
+var PLAYERS_OUT_OF_GAME = "玩家不在地图内！"
 
 var GAME_STATE_WAITING = 0;
 var GAME_STATE_STARTED = 1;
@@ -76,34 +77,50 @@ function Game(userid, gamename, maxplayer, city, x1, y1, x2, y2, gametype) {
     this.Distance = NaN
 }
 
-function Cell(x,y,role)
+function GameObject(id, x, y, role, displayname, state)
 {
+    this.GOID = id
     this.X = x
     this.Y = y
     this.Role = role
-}
-
-function GameMap(row, column, grid) {
-    this.Row = row
-    this.Column = column
-    this.Grid = grid
+    this.DisplayName = displayname
+    this.State = state
 }
 
 function SetupMap(game){
     var distanceX = 2.0/11000.0 // 2m
     var distanceY = 2.0/11000.0 // 2m
     
-    var cellgrid = [];
+    var gomap = new Map();
     
     var row = Math.round((game.Y2-game.Y1)/distanceY)
     var column = Math.round((game.X2 - game.X1)/distanceX)
-    
+
+    // call the imageprocessor here!!!
+    var result = new Array();
+    for (var i = 0; i < row; i++) {
+        result[i] = new Array();
+        for (var j = 0; j < column; j++) {
+            if (i % 10 == 0 && j % 10 == 0)
+                result[i][j] = 1
+            else
+                result[i][j] = 0
+        }
+    }
+
+    var beanid = 0
     for (var i = 0; i < row; i++){
         for (var j=0; j < column;j++){
-            var pointX = game.X1 + 0.5*distanceX + i*distanceX
-            var pointY = game.Y1 + 0.5*distanceY + j*distanceY
-            var cell = new Cell(pointX, pointY, "bean")
-            cellgrid.push(cell)	
+            if(result[i][j]==1)
+            {
+                var pointX = game.X1 + 0.5*distanceX + i*distanceX
+                var pointY = game.Y1 + 0.5*distanceY + j*distanceY
+                
+                var beangoid = "bean_"+beanid
+                beanid = beanid + 1
+                var beango = new GameObject(beangoid, pointX, pointY, "bean", "bean", "normal")
+               	gomap.set(beangoid, beango)           
+            }
         }
     }
     
@@ -113,23 +130,13 @@ function SetupMap(game){
         if(players.has(userid))
         {
             var player = players.get(userid)
-            var cellindex = 0
-            if(player.X > game.X1 && player.X < game.X2 && player.Y > game.Y1 && player.Y < game.Y2)
-            {
-                var playerRow = Math.round( (player.X - game.X1)/distanceX)
-                var playerColumn =Math.round( (player.Y - game.Y1)/distanceY)
-                cellindex = playerRow*column + playerColumn
-            }
-            while(cellgrid[cellindex].Role === "player"){
-                cellindex = (cellindex+1)%(row*column)
-            }
-            player.X = cellgrid[cellindex].X
-            player.Y = cellgrid[cellindex].Y
-            cellgrid[cellindex].Role = "player"            
+            var playergoid = "player_" + userid
+            var role = "pacman"
+            var playergo = new GameObject(playergoid, player.X, player.Y, role, userid, "normal")
+            gomap.set(playergoid, playergo)        
         }
     }
-    var map = new GameMap(row, column, cellgrid)
-    maps.set(game.ID.toString(), map)
+    maps.set(game.ID.toString(), gomap)
 }
 
 function UpdateMap(gameid, userid)
@@ -137,24 +144,25 @@ function UpdateMap(gameid, userid)
 	var distanceX = 0.5/11000.0 // 0.5m
 	var distanceY = distanceX	
 
-    var gamemap = maps.get(gameid)
+    var gomap = maps.get(gameid)
     var player = players.get(userid)
 
-    for(var i = 0; i<gamemap.Grid.length;i++)
-	{
-        var cell = gamemap.Grid[i]
-		if (cell.Role == "bean"){
-			var startX = cell.X - distanceX
-			var stopX = cell.X + distanceX
-			var startY = cell.Y - distanceY
-			var stopY = cell.Y + distanceY
+    for(var goid in gomap)
+    {
+        var go = gomap[goid]
+		if (go.Role == "bean" && go.State == "normal"){
+			var startX = go.X - distanceX
+			var stopX = go.X + distanceX
+			var startY = go.Y - distanceY
+			var stopY = go.Y + distanceY
 			
 			if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY){
-				console.log("UpdateMap: eat :[" +  cell.X + "][" + cell.Y + "]")
+				console.log("UpdateMap: eat :[" +  go.X + "][" + go.Y + "]")
+				go.State = "eaten"
+                player.Score = player.Score + 1
                 var channel = channels.get(gameid)
-                channel.pushMessage('onMapUpdate', {index: i, x:cell.X, y:cell.Y, role: "empty"});
-				cell.Role = "empty"
-				player.Score = player.Score + 1
+                channel.pushMessage('onMapUpdate', {goid: goid, go: go});
+				channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score});
 			}			
 		}
 	}  
@@ -348,12 +356,37 @@ GameRemote.prototype.start = function (msg, next) {
         var game = games.get(gameid)
         if (userid === game.Host) {
             if (game.State === GAME_STATE_WAITING) {
-                success = true
-                message = ""
-                game.State = GAME_STATE_STARTED
-                SetupMap(game)
-                var channel = channels.get(gameid)
-                channel.pushMessage('onStart', {user:userid});
+                var allplayersinsidemap = true
+                for(var i = 0; i<game.CurrentPlayers.length;i++)
+                {
+                    var playerid = game.CurrentPlayers[i]
+                    if(players.has(playerid))
+                    {
+                        var player = players.get(userid)
+                        if(player.X >= game.X1 && player.X <= game.X2 && player.Y >= game.Y1 && player.Y <= game.Y2)
+                        {
+                        }
+                        else
+                        {
+                            allplayersinsidemap = false
+                            break
+                        }
+                    }
+                }
+                
+                if(allplayersinsidemap)
+                {
+                    success = true
+                    message = ""
+                    game.State = GAME_STATE_STARTED
+                    SetupMap(game)
+                    var channel = channels.get(gameid)
+                    channel.pushMessage('onStart', {user:userid});                    
+                }
+                else
+                {
+                    message = PLAYERS_OUT_OF_GAME
+                }
             }
             else {
                 message = GAME_NOT_READY
@@ -424,7 +457,7 @@ GameRemote.prototype.querymap = function (msg, next) {
     next(null, {
         success: success,
         message: message,
-        map: JSON.stringify(map)
+        map: JSON.stringify(Array.from(map.entries()))
     });
 };
 
