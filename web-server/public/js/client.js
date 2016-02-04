@@ -180,6 +180,10 @@ $(document).ready(function() {
         alert("onMapUpdate!" + JSON.stringify(data))
     })
     
+    pomelo.on('onPlayerScore', function(data){
+        alert("onPlayerScore:" + JSON.stringify(data))
+    })
+    
 	//handle disconect message, occours when the client is disconnect with servers
 	pomelo.on('disconnect', function(reason) {
 		showLogin();
