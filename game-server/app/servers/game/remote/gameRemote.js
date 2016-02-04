@@ -124,16 +124,20 @@ function SetupMap(game){
         }
     }
     
-    for(var i = 0; i<game.CurrentPlayers.length;i++)
+    // assume pacman:ghost = 3
+    var ratio = 3
+    for (var i = 0; i < game.CurrentPlayers.length; i++) 
     {
         var userid = game.CurrentPlayers[i]
-        if(players.has(userid))
+        if (players.has(userid)) 
         {
             var player = players.get(userid)
             var playergoid = "player_" + userid
             var role = "pacman"
+            if (i % (ratio + 1) == 0)
+                role = "ghost"
             var playergo = new GameObject(playergoid, player.X, player.Y, role, userid, "normal")
-            gomap.set(playergoid, playergo)        
+            gomap.set(playergoid, playergo)
         }
     }
     maps.set(game.ID.toString(), gomap)
