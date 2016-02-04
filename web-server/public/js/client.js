@@ -424,6 +424,22 @@ $(document).ready(function() {
         });
     });	
     
+    $("#kickuser").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var kickuserid = $("#kickuserid").attr("value");
+        var route = "game.gameHandler.kickuser";
+        pomelo.request(route, {
+            gameid: gameid,
+            userid: userid,
+            kickuserid: kickuserid
+        }, function(data) {
+            if(!data.success)
+            {
+				addOutput(data.message);
+			}
+        });
+    });	
+    
 });
 
                      

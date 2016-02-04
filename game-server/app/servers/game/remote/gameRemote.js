@@ -558,3 +558,55 @@ GameRemote.prototype.send = function(msg, next) {
     }
 	
 };
+
+GameRemote.prototype.kickuser = function (msg, serverid, next) {
+    var gameid = msg.gameid
+    var userid = msg.userid
+    var kickuserid = msg.kickuserid
+    var success = false
+    var message = GAME_NOT_FOUND
+
+    if(games.has(gameid))
+    {
+        var game = games.get(gameid)
+        if (userid === game.Host) {
+            var index = -1
+            for(var i = 0;i<game.CurrentPlayers.length;i++)
+            {
+                if(game.CurrentPlayers[i] === kickuserid)
+                {
+                    index = i
+                    break
+                }
+            }            
+            if (index > -1) {
+                message = ""
+                success = true
+                players.delete(kickuserid)
+                game.CurrentPlayers.splice(index, 1)
+                var channel = channels.get(gameid)
+                channel.leave(kickuserid, serverid)
+                channel.pushMessage('onLeave', {user:kickuserid});
+                if (game.CurrentPlayers.length == 0) {
+                    games.delete(gameid)
+                    channels.delete(gameid)
+                }
+                else if (game.Host == userid) {
+                    game.Host = game.CurrentPlayers[0]
+                }                
+            }
+            else
+            {
+                message = USER_NOT_IN_GAME
+            }
+        }
+        else {
+            message = NOT_HOST_IN_GAME
+        }        
+    }
+
+    next(null, {
+        success: success,
+        message: message
+    });
+};
