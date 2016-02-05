@@ -7,6 +7,8 @@ function BinaryArrayFromImage(imagePath, width, height)
   var h = im.height();
   if (w < 1 || h < 1) throw new Error('Image has no size');
 
+
+im.convertGrayscale();
   var binaryImage = im.threshold(200, 255, "Binary");
   console.log("image converted to binary image");
   

@@ -1,2 +1,2 @@
 var improcesser = require('./ImageProcesser');
-improcesser.BinaryArrayFromImage('convertedImage.jpg',100,100);
+improcesser.BinaryArrayFromImage('4.jpg',100,100);
