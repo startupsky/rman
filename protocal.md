@@ -210,3 +210,21 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 }
 
 ```
+
+##KickUser
+###Request
+```
+{
+    gameid: gameid,
+    userid: userid,
+    kickuserid: kickuserid
+}
+```
+###Response
+```
+{
+	success: false,
+	message: 不是游戏创建者！
+}
+
+```

@@ -184,6 +184,11 @@ $(document).ready(function() {
         alert("onPlayerScore:" + JSON.stringify(data))
     })
     
+    pomelo.on('onRoleAssigned', function(data){
+        alert("onRoleAssigned:" + JSON.stringify(data))
+    })
+    
+    
 	//handle disconect message, occours when the client is disconnect with servers
 	pomelo.on('disconnect', function(reason) {
 		showLogin();
@@ -416,6 +421,22 @@ $(document).ready(function() {
             gameid: gameid
         }, function(data) {
             addOutput(data.players)
+        });
+    });	
+    
+    $("#kickuser").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var kickuserid = $("#kickuserid").attr("value");
+        var route = "game.gameHandler.kickuser";
+        pomelo.request(route, {
+            gameid: gameid,
+            userid: userid,
+            kickuserid: kickuserid
+        }, function(data) {
+            if(!data.success)
+            {
+				addOutput(data.message);
+			}
         });
     });	
     

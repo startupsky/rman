@@ -58,3 +58,7 @@ handler.reportusersforgame = function (msg, session, next){
 handler.send = function (msg, session, next) {
     this.app.rpc.game.gameRemote.send(session, msg, next);
 };
+
+handler.kickuser = function (msg, session, next) {
+    this.app.rpc.game.gameRemote.kickuser(session, msg, session.frontendId, next);
+};
