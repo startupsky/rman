@@ -88,8 +88,8 @@ function GameObject(id, x, y, role, displayname, state)
 }
 
 function SetupMap(game, channelService){
-    var distanceX = 2.0/11000.0 // 2m
-    var distanceY = 2.0/11000.0 // 2m
+    var distanceX = 2.0/110000.0 // 2m
+    var distanceY = 2.0/110000.0 // 2m
     
     var gomap = new Map();
     
@@ -123,9 +123,12 @@ function SetupMap(game, channelService){
             gomap.set(playergoid, playergo)
         }
     }
-    
+
     var row = Math.round((game.Y2-game.Y1)/distanceY)
     var column = Math.round((game.X2 - game.X1)/distanceX)
+    
+    console.log(" row:"+row)
+    console.log(" column:"+column)
 
     // call the imageprocessor here!!!
     var result = new Array();
@@ -149,12 +152,12 @@ function SetupMap(game, channelService){
                 
                 var beangoid = "bean_"+beanid
                 beanid = beanid + 1
-                var beango = new GameObject(beangoid, pointX, pointY, "bean", "bean", "normal")
+                var beango = new GameObject(beangoid, pointX.toString(), pointY.toString(), "bean", "bean", "normal")
                	gomap.set(beangoid, beango)           
             }
         }
     }
-
+    
     maps.set(game.ID.toString(), gomap)
 }
 
