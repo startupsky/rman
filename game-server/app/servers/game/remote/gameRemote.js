@@ -139,7 +139,7 @@ function SetupMap(game, channelService){
             if (i % 10 == 0 && j % 10 == 0)
                 result[i][j] = 1
             else
-                result[i][j] = 1 // 0, //
+                result[i][j] = 1 // 0, //make all as bean for testing
         }
     }
 
