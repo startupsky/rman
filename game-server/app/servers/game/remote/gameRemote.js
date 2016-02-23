@@ -90,6 +90,7 @@ function GameObject(id, x, y, role, displayname, state)
 function SetupMap(game, channelService){
     var distanceX = 2.0/111000.0 // 2m
     var distanceY = 2.0/111000.0 // 2m
+    console.log("distance for bean (setup): " + distanceX)
     
     var gomap = new Map();
     
@@ -165,7 +166,7 @@ function UpdateMap(gameid, userid)
 {
 	var distanceX = 0.5/111000.0 // 0.5m
 	var distanceY = distanceX	
-    console.log("distance for bean")
+    console.log("distance for bean (eat): " + distanceX)
 
     var gomap = maps.get(gameid)
     var player = players.get(userid)
