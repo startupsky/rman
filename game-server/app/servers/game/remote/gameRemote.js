@@ -396,19 +396,19 @@ GameRemote.prototype.start = function (msg, next) {
                     }
                 }
                 
-                if(allplayersinsidemap)
-                {
+                // if(allplayersinsidemap)
+                // {
                     success = true
                     message = ""
                     game.State = GAME_STATE_STARTED
                     SetupMap(game, this.channelService)
                     var channel = channels.get(gameid)
                     channel.pushMessage('onStart', {user:userid});                    
-                }
-                else
-                {
-                    message = PLAYERS_OUT_OF_GAME
-                }
+                // }
+                // else
+                // {
+                //     message = PLAYERS_OUT_OF_GAME
+                // }
             }
             else {
                 message = GAME_NOT_READY
