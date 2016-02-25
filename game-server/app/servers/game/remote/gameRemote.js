@@ -171,14 +171,13 @@ function UpdateMap(gameid, userid)
     var gomap = maps.get(gameid)
     var player = players.get(userid)
 
-    for(var goid in gomap)
-    {
-        var go = gomap[goid]
+    gomap.forEach(function loop(go, goid, map) {
+        
 		if (go.Role == "bean" && go.State == "normal"){
 			var startX = go.X - distanceX
-			var stopX = go.X + distanceX
+			var stopX = parseFloat(go.X + distanceX)
 			var startY = go.Y - distanceY
-			var stopY = go.Y + distanceY
+			var stopY = parseFloat(go.Y + distanceY)
 			
 			if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY){
 				console.log("UpdateMap: eat :[" +  go.X + "][" + go.Y + "]")
@@ -189,7 +188,7 @@ function UpdateMap(gameid, userid)
 				channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score});
 			}			
 		}
-	}  
+    })
 }
 
 GameRemote.prototype.create = function (msg, serverid, next) { 
