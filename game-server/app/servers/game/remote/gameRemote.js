@@ -164,7 +164,8 @@ function SetupMap(game, channelService){
 
 function UpdateMap(gameid, userid)
 {
-	var distanceX = 0.5/111000.0 // 0.5m
+	//var distanceX = 0.5/111000.0 // 0.5m
+    var distanceX = 10
 	var distanceY = distanceX	
     console.log("distance for bean (eat): " + distanceX)
 
