@@ -455,6 +455,11 @@ GameRemote.prototype.stop = function (msg, next) {
                 success = true
                 message = ""
                 game.State = GAME_STATE_STOPPED
+                
+                for(var playerid of game.CurrentPlayers)
+                {
+                    players.delete(playerid)
+                }
                 SaveUserInfo(userid)
             }
             else {
@@ -512,13 +517,20 @@ GameRemote.prototype.report = function (msg, next) {
             player.X = x
             player.Y = y
             
-            var gomap = maps.get(player.GameID)
-            var playergo = gomap.get("player_"+userid)
-            playergo.X = x
-            playergo.Y = y
             var channel = channels.get(player.GameID)
             channel.pushMessage('onPlayerUpdate', {userid:userid,x:player.X,y:player.Y});
-            UpdateMap(player.GameID, userid)            
+                    
+            var gomap = maps.get(player.GameID)
+            if(!!gomap)
+            {
+                var playergo = gomap.get("player_"+userid)
+                if(!!playergo)
+                {
+                    playergo.X = x
+                    playergo.Y = y
+                    UpdateMap(player.GameID, userid)                 
+                }                
+            }
         }
     }
 
