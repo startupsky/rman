@@ -57,6 +57,7 @@ function Player(userid, x, y, gameid)
     this.GameID = gameid.toString()
     this.Score = 0
     this.Role = "pacman"
+    this.State = "normal"
 }
 
 function Game(userid, gamename, maxplayer, city, x1, y1, x2, y2, gametype) {
@@ -120,6 +121,7 @@ function SetupMap(game, channelService){
                 var param = {role: role, instruction: "your role is to ..."}
                 channelService.pushMessageByUids('onRoleAssigned', param, receivers);                            
             }
+            player.Role = role
             var playergo = new GameObject(playergoid, player.X, player.Y, role, userid, "normal")
             gomap.set(playergoid, playergo)
         }
@@ -172,22 +174,34 @@ function UpdateMap(gameid, userid)
     var player = players.get(userid)
 
     gomap.forEach(function loop(go, goid, map) {
-        
-		if (go.Role == "bean" && go.State == "normal"){
-			var startX = go.X - distanceX
-			var stopX = parseFloat(go.X + distanceX)
-			var startY = go.Y - distanceY
-			var stopY = parseFloat(go.Y + distanceY)
-			
-			if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY){
-				console.log("UpdateMap: eat :[" +  go.X + "][" + go.Y + "]")
-				go.State = "eaten"
-                player.Score = player.Score + 1
-                var channel = channels.get(gameid)
-                channel.pushMessage('onMapUpdate', {goid: goid, go: go});
-				channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score});
-			}			
-		}
+        if (go.State == "normal"){
+            var startX = go.X - distanceX
+            var stopX = parseFloat(go.X + distanceX)
+            var startY = go.Y - distanceY
+            var stopY = parseFloat(go.Y + distanceY)
+            
+            if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY)
+            {
+                if(go.Role === "bean" && player.Role === "pacman")
+                {
+                    console.log("UpdateMap: eat bean :[" +  go.X + "][" + go.Y + "]")
+                    go.State = "eaten"
+                    player.Score = player.Score + 1
+                    var channel = channels.get(gameid)
+                    channel.pushMessage('onMapUpdate', {goid: goid, go: go});
+                    channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score});                        
+                }
+                else if(go.Role === "pacman" && player.Role === "ghost")
+                {
+                    console.log("UpdateMap: eat pacman :[" +  go.X + "][" + go.Y + "]")
+                    go.State = "dead"
+                    player.Score = player.Score + 10
+                    var channel = channels.get(gameid)
+                    channel.pushMessage('onMapUpdate', {goid: goid, go: go});
+                    channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score});                        
+                }
+            }			
+        }
     })
 }
 
@@ -440,6 +454,11 @@ GameRemote.prototype.stop = function (msg, next) {
                 success = true
                 message = ""
                 game.State = GAME_STATE_STOPPED
+                
+                for(var playerid of game.CurrentPlayers)
+                {
+                    players.delete(playerid)
+                }
                 SaveUserInfo(userid)
             }
             else {
@@ -492,11 +511,26 @@ GameRemote.prototype.report = function (msg, next) {
     if(players.has(userid))
     {
         player = players.get(userid)
-        player.X = x
-        player.Y = y
-        var channel = channels.get(player.GameID)
-        channel.pushMessage('onPlayerUpdate', {userid:userid,x:player.X,y:player.Y});
-        UpdateMap(player.GameID, userid)
+        if(player.State === "normal")
+        {
+            player.X = x
+            player.Y = y
+            
+            var channel = channels.get(player.GameID)
+            channel.pushMessage('onPlayerUpdate', {userid:userid,x:player.X,y:player.Y});
+                    
+            var gomap = maps.get(player.GameID)
+            if(!!gomap)
+            {
+                var playergo = gomap.get("player_"+userid)
+                if(!!playergo)
+                {
+                    playergo.X = x
+                    playergo.Y = y
+                    UpdateMap(player.GameID, userid)                 
+                }                
+            }
+        }
     }
 
     next(null, {

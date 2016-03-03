@@ -173,15 +173,15 @@ $(document).ready(function() {
     })
     
     pomelo.on('onPlayerUpdate', function(data){
-        alert("onPlayerUpdate:" + JSON.stringify(data))
+        addOutput("onPlayerUpdate:" + JSON.stringify(data))
     })
         
     pomelo.on('onMapUpdate', function(data){
-        alert("onMapUpdate!" + JSON.stringify(data))
+        addOutput("onMapUpdate:" + JSON.stringify(data))
     })
     
     pomelo.on('onPlayerScore', function(data){
-        alert("onPlayerScore:" + JSON.stringify(data))
+        addOutput("onPlayerScore:" + JSON.stringify(data))
     })
     
     pomelo.on('onRoleAssigned', function(data){
@@ -439,7 +439,23 @@ $(document).ready(function() {
 			}
         });
     });	
-    
+     
+    $("#test").click(function () {
+        for(var i = 0; i< 100; i++)
+        {
+            var route = "game.gameHandler.report";
+            var x = $("#playerx").attr("value");
+            var y = $("#playery").attr("value");
+            
+            pomelo.request(route, {
+                userid: userid,
+                x:x,
+                y:y
+            }, function (data) {
+                //addOutput(data.player)
+            });
+        }
+    });	    
 });
 
                      
