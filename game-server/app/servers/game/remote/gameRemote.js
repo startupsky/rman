@@ -8,6 +8,7 @@ var GAME_NOT_READY = "游戏状态不能开始！";
 var GAME_NOT_STARTED = "游戏没有开始！";
 var USER_NOT_IN_GAME = "游戏中没有这个用户！";
 var PLAYERS_OUT_OF_GAME = "玩家不在地图内！"
+var NOT_CAPABLE = "玩家没有这个道具！";
 
 var GAME_STATE_WAITING = 0;
 var GAME_STATE_STARTED = 1;
@@ -512,12 +513,20 @@ GameRemote.prototype.report = function (msg, next) {
     if(players.has(userid))
     {
         player = players.get(userid)
-        if(player.State === "normal")
+        var channel = channels.get(player.GameID)
+        if(player.State === "freeze")
+        {
+            var limit = 1.0/111000 // 1m
+            if(Math.abs(x-player.X) >= limit || Math.abs(y-player.Y) >= limit)
+            {
+                channel.pushMessage('onOutScope', {userid:userid,x:player.X,y:player.Y});                
+            }
+        }
+        else if(player.State === "normal")
         {
             player.X = x
             player.Y = y
-            
-            var channel = channels.get(player.GameID)
+
             channel.pushMessage('onPlayerUpdate', {userid:userid,x:player.X,y:player.Y});
                     
             var gomap = maps.get(player.GameID)
@@ -641,6 +650,51 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
         }
         else {
             message = NOT_HOST_IN_GAME
+        }        
+    }
+
+    next(null, {
+        success: success,
+        message: message
+    });
+};
+
+
+GameRemote.prototype.freezeuser = function (msg, serverid, next) {
+    var gameid = msg.gameid
+    var userid = msg.userid
+    var freezeuserid = msg.freezeuserid
+    var success = false
+    var message = GAME_NOT_FOUND
+
+    if(games.has(gameid))
+    {
+        var game = games.get(gameid)
+        if (true) { // later need check if user have this ability
+            var index = -1
+            for(var i = 0;i<game.CurrentPlayers.length;i++)
+            {
+                if(game.CurrentPlayers[i] === freezeuserid)
+                {
+                    index = i
+                    break
+                }
+            }            
+            if (index > -1) {
+                message = ""
+                success = true
+                var channel = channels.get(gameid)
+                channel.pushMessage('onPlayerFreezed', {user:freezeuserid})
+                var player = players.get(freezeuserid)
+                player.State = "freeze"
+            }
+            else
+            {
+                message = USER_NOT_IN_GAME
+            }
+        }
+        else {
+            message = NOT_CAPABLE
         }        
     }
 

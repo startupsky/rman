@@ -62,3 +62,7 @@ handler.send = function (msg, session, next) {
 handler.kickuser = function (msg, session, next) {
     this.app.rpc.game.gameRemote.kickuser(session, msg, session.frontendId, next);
 };
+
+handler.freezeuser = function (msg, session, next) {
+    this.app.rpc.game.gameRemote.freezeuser(session, msg, session.frontendId, next);
+};

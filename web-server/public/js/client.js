@@ -187,6 +187,15 @@ $(document).ready(function() {
     pomelo.on('onRoleAssigned', function(data){
         alert("onRoleAssigned:" + JSON.stringify(data))
     })
+        
+    pomelo.on('onPlayerFreezed', function(data){
+        alert("onPlayerFreezed:" + JSON.stringify(data))
+    })
+        
+    pomelo.on('onOutScope', function(data){
+        alert("onOutScope:" + JSON.stringify(data))
+    })
+    
     
     
 	//handle disconect message, occours when the client is disconnect with servers
@@ -456,6 +465,22 @@ $(document).ready(function() {
             });
         }
     });	    
+     
+    $("#freezeuser").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var freezeuserid = $("#kickuserid").attr("value");
+        var route = "game.gameHandler.freezeuser";
+        pomelo.request(route, {
+            gameid: gameid,
+            userid: userid,
+            freezeuserid: freezeuserid
+        }, function(data) {
+            if(!data.success)
+            {
+				addOutput(data.message);
+			}
+        });
+    });    
 });
 
                      
