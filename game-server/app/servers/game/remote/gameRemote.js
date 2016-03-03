@@ -139,7 +139,7 @@ function SetupMap(game, channelService){
             if (i % 10 == 0 && j % 10 == 0)
                 result[i][j] = 1
             else
-                result[i][j] = 1 // 0, //make all as bean for testing
+                result[i][j] = 0 // 0, //make all as bean for testing
         }
     }
 
@@ -164,8 +164,7 @@ function SetupMap(game, channelService){
 
 function UpdateMap(gameid, userid)
 {
-	//var distanceX = 0.5/111000.0 // 0.5m
-    var distanceX = 10
+	var distanceX = 0.5/111000.0 // 0.5m
 	var distanceY = distanceX	
     console.log("distance for bean (eat): " + distanceX)
 
