@@ -90,8 +90,8 @@ function GameObject(id, x, y, role, displayname, state)
 }
 
 function SetupMap(game, channelService){
-    var distanceX = 2.0/111000.0 // 2m
-    var distanceY = 2.0/111000.0 // 2m
+    var distanceX = 2.0/11000.0 // 2m
+    var distanceY = 2.0/11000.0 // 2m
     console.log("distance for bean (setup): " + distanceX)
     
     var gomap = new Map();
@@ -142,7 +142,7 @@ function SetupMap(game, channelService){
             if (i % 10 == 0 && j % 10 == 0)
                 result[i][j] = 1
             else
-                result[i][j] = 0 // 0, //make all as bean for testing
+                result[i][j] = 1 // 0, //make all as bean for testing
         }
     }
 
@@ -176,10 +176,10 @@ function UpdateMap(gameid, userid, range)
 
     gomap.forEach(function loop(go, goid, map) {
         if (go.State == "normal"){
-            var startX = go.X - distanceX
-            var stopX = parseFloat(go.X + distanceX)
-            var startY = go.Y - distanceY
-            var stopY = parseFloat(go.Y + distanceY)
+            var startX = parseFloat((go.X - distanceX).toString())
+            var stopX = parseFloat(go.X) + parseFloat(distanceX.toString())
+            var startY = parseFloat((go.Y - distanceY).toString())
+            var stopY = parseFloat(go.Y) + parseFloat(distanceY.toString())        
             
             if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY)
             {
@@ -201,7 +201,7 @@ function UpdateMap(gameid, userid, range)
                     channel.pushMessage('onMapUpdate', {goid: goid, go: go});
                     channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score});                        
                 }
-            }			
+            }
         }
     })
 }
