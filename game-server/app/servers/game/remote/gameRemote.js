@@ -511,14 +511,29 @@ GameRemote.prototype.report = function (msg, next) {
     var player
     if(players.has(userid))
     {
+        var limit = 1.0/111000 // 1m
         player = players.get(userid)
         var channel = channels.get(player.GameID)
         if(player.State === "freeze")
         {
-            var limit = 1.0/111000 // 1m
             if(Math.abs(x-player.X) >= limit || Math.abs(y-player.Y) >= limit)
             {
                 channel.pushMessage('onOutScope', {userid:userid,x:player.X,y:player.Y});                
+            }
+        }
+        else if(player.State === "target")
+        {
+            player.X = x
+            player.Y = y
+
+            if(Math.abs(player.TargetX-player.X) >= limit || Math.abs(player.TargetY-player.Y) >= limit)
+            {
+                channel.pushMessage('onNotReachTarget', {userid:userid,x:player.X,y:player.Y});
+            }
+            else
+            {
+                channel.pushMessage('onReachTarget', {userid:userid,x:player.X,y:player.Y});
+                player.State = "normal"                                
             }
         }
         else if(player.State === "normal")
@@ -659,7 +674,7 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
 };
 
 
-GameRemote.prototype.freezeuser = function (msg, serverid, next) {
+GameRemote.prototype.freezeuser = function (msg, next) {
     var gameid = msg.gameid
     var userid = msg.userid
     var freezeuserid = msg.freezeuserid
@@ -686,6 +701,55 @@ GameRemote.prototype.freezeuser = function (msg, serverid, next) {
                 channel.pushMessage('onPlayerFreezed', {user:freezeuserid})
                 var player = players.get(freezeuserid)
                 player.State = "freeze"
+            }
+            else
+            {
+                message = USER_NOT_IN_GAME
+            }
+        }
+        else {
+            message = NOT_CAPABLE
+        }        
+    }
+
+    next(null, {
+        success: success,
+        message: message
+    });
+};
+
+
+GameRemote.prototype.targetuser = function (msg, next) {
+    var gameid = msg.gameid
+    var userid = msg.userid
+    var targetuserid = msg.targetuserid
+    var targetx = msg.targetx
+    var targety = msg.targety
+    var success = false
+    var message = GAME_NOT_FOUND
+
+    if(games.has(gameid))
+    {
+        var game = games.get(gameid)
+        if (true) { // later need check if user have this ability
+            var index = -1
+            for(var i = 0;i<game.CurrentPlayers.length;i++)
+            {
+                if(game.CurrentPlayers[i] === targetuserid)
+                {
+                    index = i
+                    break
+                }
+            }            
+            if (index > -1) {
+                message = ""
+                success = true
+                var channel = channels.get(gameid)
+                channel.pushMessage('onPlayerTargeted', {user:targetuserid, targetx:targetx, targety:targety})
+                var player = players.get(targetuserid)
+                player.State = "target"
+                player.TargetX = targetx
+                player.TargetY = targety
             }
             else
             {

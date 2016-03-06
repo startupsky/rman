@@ -246,3 +246,24 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 }
 
 ```
+
+
+##TargetUser
+###Request
+```
+{
+    gameid: gameid,
+    userid: userid,
+    targetuserid: targetuserid,
+    targetx: targetx,
+    targety: targety
+}
+```
+###Response
+```
+{
+	success: false,
+	message: 游戏中没有这个用户！
+}
+
+```

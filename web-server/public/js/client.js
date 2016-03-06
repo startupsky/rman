@@ -195,9 +195,21 @@ $(document).ready(function() {
     pomelo.on('onOutScope', function(data){
         alert("onOutScope:" + JSON.stringify(data))
     })
+        
+    pomelo.on('onPlayerTargeted', function(data){
+        alert("onPlayerTargeted:" + JSON.stringify(data))
+    })    
+        
+    pomelo.on('onReachTarget', function(data){
+        alert("onReachTarget:" + JSON.stringify(data))
+    })      
+        
+    pomelo.on('onNotReachTarget', function(data){
+        alert("onNotReachTarget:" + JSON.stringify(data))
+    })  
     
     
-    
+        
 	//handle disconect message, occours when the client is disconnect with servers
 	pomelo.on('disconnect', function(reason) {
 		showLogin();
@@ -481,6 +493,26 @@ $(document).ready(function() {
 			}
         });
     });    
+     
+    $("#targetuser").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var targetuserid = $("#kickuserid").attr("value");
+        var targetx = $("#x_target").attr("value")
+        var targety = $("#y_target").attr("value")
+        var route = "game.gameHandler.targetuser";
+        pomelo.request(route, {
+            gameid: gameid,
+            userid: userid,
+            targetuserid: targetuserid,
+            targetx: targetx,
+            targety: targety
+        }, function(data) {
+            if(!data.success)
+            {
+				addOutput(data.message);
+			}
+        });
+    });     
 });
 
                      
