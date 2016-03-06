@@ -532,7 +532,24 @@ $(document).ready(function() {
 				addOutput(data.message);
 			}
         });
-    });     
+    });    
+    
+        
+    $("#attackrange").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var range = $("#range").attr("value");
+        var route = "game.gameHandler.attackrange";
+        pomelo.request(route, {
+            gameid: gameid,
+            userid: userid,
+            range: range
+        }, function(data) {
+            if(!data.success)
+            {
+				addOutput(data.message);
+			}
+        });
+    });  
 });
 
                      

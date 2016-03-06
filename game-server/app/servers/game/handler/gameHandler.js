@@ -74,3 +74,7 @@ handler.unfreezeuser = function (msg, session, next) {
 handler.targetuser = function (msg, session, next) {
     this.app.rpc.game.gameRemote.targetuser(session, msg, next);
 };
+
+handler.attackrange = function (msg, session, next) {
+    this.app.rpc.game.gameRemote.attackrange(session, msg, next);
+};

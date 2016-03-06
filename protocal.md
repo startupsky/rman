@@ -285,3 +285,21 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 }
 
 ```
+
+
+##attackrange
+###Request
+```
+{
+    gameid: gameid,
+    userid: userid,
+    range: range
+}
+```
+###Response
+```
+{
+	success: true
+}
+
+```

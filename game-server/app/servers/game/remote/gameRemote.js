@@ -165,9 +165,9 @@ function SetupMap(game, channelService){
     maps.set(game.ID.toString(), gomap)
 }
 
-function UpdateMap(gameid, userid)
+function UpdateMap(gameid, userid, range)
 {
-	var distanceX = 0.5/111000.0 // 0.5m
+	var distanceX = range/111000.0
 	var distanceY = distanceX	
     console.log("distance for bean (eat): " + distanceX)
 
@@ -551,7 +551,7 @@ GameRemote.prototype.report = function (msg, next) {
                 {
                     playergo.X = x
                     playergo.Y = y
-                    UpdateMap(player.GameID, userid)                 
+                    UpdateMap(player.GameID, userid, 0.5)                 
                 }                
             }
         }
@@ -807,5 +807,25 @@ GameRemote.prototype.targetuser = function (msg, next) {
     next(null, {
         success: success,
         message: message
+    });
+};
+
+
+GameRemote.prototype.attackrange = function (msg, next) {
+    var userid = msg.userid
+    var range = parseFloat(msg.range)
+
+    var player
+    if(players.has(userid))
+    {
+        player = players.get(userid)
+        if(player.State === "normal")
+        {
+            UpdateMap(player.GameID, userid, range)                 
+        }
+    }
+
+    next(null, {
+        player: JSON.stringify(player)
     });
 };
