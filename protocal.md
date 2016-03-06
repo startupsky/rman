@@ -248,6 +248,24 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 ```
 
 
+##UnFreezeUser
+###Request
+```
+{
+    gameid: gameid,
+    userid: userid,
+    unfreezeuserid: unfreezeuserid
+}
+```
+###Response
+```
+{
+	success: false,
+	message: 游戏中没有这个用户！
+}
+
+```
+
 ##TargetUser
 ###Request
 ```

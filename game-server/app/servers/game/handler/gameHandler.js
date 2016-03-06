@@ -67,6 +67,10 @@ handler.freezeuser = function (msg, session, next) {
     this.app.rpc.game.gameRemote.freezeuser(session, msg, next);
 };
 
+handler.unfreezeuser = function (msg, session, next) {
+    this.app.rpc.game.gameRemote.unfreezeuser(session, msg, next);
+};
+
 handler.targetuser = function (msg, session, next) {
     this.app.rpc.game.gameRemote.targetuser(session, msg, next);
 };

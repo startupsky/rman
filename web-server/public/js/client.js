@@ -191,7 +191,11 @@ $(document).ready(function() {
     pomelo.on('onPlayerFreezed', function(data){
         alert("onPlayerFreezed:" + JSON.stringify(data))
     })
-        
+                
+    pomelo.on('onPlayerUnFreezed', function(data){
+        alert("onPlayerUnFreezed:" + JSON.stringify(data))
+    })
+    
     pomelo.on('onOutScope', function(data){
         alert("onOutScope:" + JSON.stringify(data))
     })
@@ -493,7 +497,23 @@ $(document).ready(function() {
 			}
         });
     });    
-     
+          
+    $("#unfreezeuser").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var unfreezeuserid = $("#kickuserid").attr("value");
+        var route = "game.gameHandler.unfreezeuser";
+        pomelo.request(route, {
+            gameid: gameid,
+            userid: userid,
+            unfreezeuserid: unfreezeuserid
+        }, function(data) {
+            if(!data.success)
+            {
+				addOutput(data.message);
+			}
+        });
+    }); 
+    
     $("#targetuser").click(function () {
         var gameid = $("#gameid").attr("value");
         var targetuserid = $("#kickuserid").attr("value");

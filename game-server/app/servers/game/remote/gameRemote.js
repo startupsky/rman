@@ -718,6 +718,49 @@ GameRemote.prototype.freezeuser = function (msg, next) {
     });
 };
 
+GameRemote.prototype.unfreezeuser = function (msg, next) {
+    var gameid = msg.gameid
+    var userid = msg.userid
+    var unfreezeuserid = msg.unfreezeuserid
+    var success = false
+    var message = GAME_NOT_FOUND
+
+    if(games.has(gameid))
+    {
+        var game = games.get(gameid)
+        if (true) { // later need check if user have this ability
+            var index = -1
+            for(var i = 0;i<game.CurrentPlayers.length;i++)
+            {
+                if(game.CurrentPlayers[i] === unfreezeuserid)
+                {
+                    index = i
+                    break
+                }
+            }            
+            if (index > -1) {
+                message = ""
+                success = true
+                var channel = channels.get(gameid)
+                channel.pushMessage('onPlayerUnFreezed', {user:unfreezeuserid})
+                var player = players.get(unfreezeuserid)
+                player.State = "normal"
+            }
+            else
+            {
+                message = USER_NOT_IN_GAME
+            }
+        }
+        else {
+            message = NOT_CAPABLE
+        }        
+    }
+
+    next(null, {
+        success: success,
+        message: message
+    });
+};
 
 GameRemote.prototype.targetuser = function (msg, next) {
     var gameid = msg.gameid
