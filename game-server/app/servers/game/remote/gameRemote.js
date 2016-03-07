@@ -90,8 +90,8 @@ function GameObject(id, x, y, role, displayname, state)
 }
 
 function SetupMap(game, channelService){
-    var distanceX = 2.0/11000.0 // 2m
-    var distanceY = 2.0/11000.0 // 2m
+    var distanceX = 2/11000.0 // 2m
+    var distanceY = 2/11000.0 // 2m
     console.log("distance for bean (setup): " + distanceX)
     
     var gomap = new Map();
@@ -133,18 +133,12 @@ function SetupMap(game, channelService){
     
     console.log(" row:"+row)
     console.log(" column:"+column)
+    console.log(process.cwd())
 
-    // call the imageprocessor here!!!
     var result = new Array();
-    for (var i = 0; i < row; i++) {
-        result[i] = new Array();
-        for (var j = 0; j < column; j++) {
-            if (i % 10 == 0 && j % 10 == 0)
-                result[i][j] = 1
-            else
-                result[i][j] = 1 // 0, //make all as bean for testing
-        }
-    }
+    var improcesser = require('../../ImageProcesser/imangeHandler/ImageProcesser');
+    result = improcesser.BinaryArrayFromImage('./taiji.jpg',row,column);
+    
 
     var beanid = 0
     for (var i = 0; i < row; i++){

@@ -3,12 +3,12 @@
 TOOLSET := target
 TARGET := action_after_build
 ### Generated for copy rule.
-/Users/sirius/node-opencv/build/opencv/v4.0.0/Release/node-v14-darwin-x64/opencv.node: TOOLSET := $(TOOLSET)
-/Users/sirius/node-opencv/build/opencv/v4.0.0/Release/node-v14-darwin-x64/opencv.node: $(builddir)/opencv.node FORCE_DO_CMD
+/Users/sirius/rman/game-server/app/servers/ImageProcesser/opencv/build/opencv/v4.0.0/Release/node-v46-darwin-x64/opencv.node: TOOLSET := $(TOOLSET)
+/Users/sirius/rman/game-server/app/servers/ImageProcesser/opencv/build/opencv/v4.0.0/Release/node-v46-darwin-x64/opencv.node: $(builddir)/opencv.node FORCE_DO_CMD
 	$(call do_cmd,copy)
 
-all_deps += /Users/sirius/node-opencv/build/opencv/v4.0.0/Release/node-v14-darwin-x64/opencv.node
-binding_gyp_action_after_build_target_copies = /Users/sirius/node-opencv/build/opencv/v4.0.0/Release/node-v14-darwin-x64/opencv.node
+all_deps += /Users/sirius/rman/game-server/app/servers/ImageProcesser/opencv/build/opencv/v4.0.0/Release/node-v46-darwin-x64/opencv.node
+binding_gyp_action_after_build_target_copies = /Users/sirius/rman/game-server/app/servers/ImageProcesser/opencv/build/opencv/v4.0.0/Release/node-v46-darwin-x64/opencv.node
 
 ### Rules for final target.
 # Build our special outputs first.

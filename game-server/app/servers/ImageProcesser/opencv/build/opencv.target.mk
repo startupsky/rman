@@ -33,6 +33,7 @@ CFLAGS_C_Debug := \
 
 # Flags passed to only C++ files.
 CFLAGS_CC_Debug := \
+	-std=gnu++0x \
 	-fno-threadsafe-statics \
 	-fno-strict-aliasing \
 	-mmacosx-version-min=10.7 \
@@ -48,10 +49,10 @@ CFLAGS_OBJC_Debug :=
 CFLAGS_OBJCC_Debug :=
 
 INCS_Debug := \
-	-I/Users/sirius/.node-gyp/0.12.0/include/node \
-	-I/Users/sirius/.node-gyp/0.12.0/src \
-	-I/Users/sirius/.node-gyp/0.12.0/deps/uv/include \
-	-I/Users/sirius/.node-gyp/0.12.0/deps/v8/include \
+	-I/Users/sirius/.node-gyp/4.3.2/include/node \
+	-I/Users/sirius/.node-gyp/4.3.2/src \
+	-I/Users/sirius/.node-gyp/4.3.2/deps/uv/include \
+	-I/Users/sirius/.node-gyp/4.3.2/deps/v8/include \
 	-I$(srcdir)/-I/usr/local/Cellar/opencv/2.4.12_2/include/opencv \
 	-I$(srcdir)/-I/usr/local/Cellar/opencv/2.4.12_2/include \
 	-I$(srcdir)/node_modules/nan
@@ -85,6 +86,7 @@ CFLAGS_C_Release := \
 
 # Flags passed to only C++ files.
 CFLAGS_CC_Release := \
+	-std=gnu++0x \
 	-fno-threadsafe-statics \
 	-fno-strict-aliasing \
 	-mmacosx-version-min=10.7 \
@@ -100,10 +102,10 @@ CFLAGS_OBJC_Release :=
 CFLAGS_OBJCC_Release :=
 
 INCS_Release := \
-	-I/Users/sirius/.node-gyp/0.12.0/include/node \
-	-I/Users/sirius/.node-gyp/0.12.0/src \
-	-I/Users/sirius/.node-gyp/0.12.0/deps/uv/include \
-	-I/Users/sirius/.node-gyp/0.12.0/deps/v8/include \
+	-I/Users/sirius/.node-gyp/4.3.2/include/node \
+	-I/Users/sirius/.node-gyp/4.3.2/src \
+	-I/Users/sirius/.node-gyp/4.3.2/deps/uv/include \
+	-I/Users/sirius/.node-gyp/4.3.2/deps/v8/include \
 	-I$(srcdir)/-I/usr/local/Cellar/opencv/2.4.12_2/include/opencv \
 	-I$(srcdir)/-I/usr/local/Cellar/opencv/2.4.12_2/include \
 	-I$(srcdir)/node_modules/nan

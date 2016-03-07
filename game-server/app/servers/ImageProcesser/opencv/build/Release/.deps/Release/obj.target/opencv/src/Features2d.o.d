@@ -1,14 +1,13 @@
-cmd_Release/obj.target/opencv/src/Features2d.o := c++ '-DNODE_GYP_MODULE_NAME=opencv' '-D_DARWIN_USE_64_BIT_INODE=1' '-D_LARGEFILE_SOURCE' '-D_FILE_OFFSET_BITS=64' '-DBUILDING_NODE_EXTENSION' -I/Users/sirius/.node-gyp/0.12.0/include/node -I/Users/sirius/.node-gyp/0.12.0/src -I/Users/sirius/.node-gyp/0.12.0/deps/uv/include -I/Users/sirius/.node-gyp/0.12.0/deps/v8/include -I../-I/usr/local/Cellar/opencv/2.4.12_2/include/opencv -I../-I/usr/local/Cellar/opencv/2.4.12_2/include -I../node_modules/nan  -Os -gdwarf-2 -mmacosx-version-min=10.5 -arch x86_64 -Wall -Wendif-labels -W -Wno-unused-parameter -fno-threadsafe-statics -fno-strict-aliasing -mmacosx-version-min=10.7 -std=c++11 -stdlib=libc++ -I/usr/local/Cellar/opencv/2.4.12_2/include/opencv -I/usr/local/Cellar/opencv/2.4.12_2/include -MMD -MF ./Release/.deps/Release/obj.target/opencv/src/Features2d.o.d.raw   -c -o Release/obj.target/opencv/src/Features2d.o ../src/Features2d.cc
+cmd_Release/obj.target/opencv/src/Features2d.o := c++ '-DNODE_GYP_MODULE_NAME=opencv' '-D_DARWIN_USE_64_BIT_INODE=1' '-D_LARGEFILE_SOURCE' '-D_FILE_OFFSET_BITS=64' '-DBUILDING_NODE_EXTENSION' -I/Users/sirius/.node-gyp/4.3.2/include/node -I/Users/sirius/.node-gyp/4.3.2/src -I/Users/sirius/.node-gyp/4.3.2/deps/uv/include -I/Users/sirius/.node-gyp/4.3.2/deps/v8/include -I../-I/usr/local/Cellar/opencv/2.4.12_2/include/opencv -I../-I/usr/local/Cellar/opencv/2.4.12_2/include -I../node_modules/nan  -Os -gdwarf-2 -mmacosx-version-min=10.5 -arch x86_64 -Wall -Wendif-labels -W -Wno-unused-parameter -std=gnu++0x -fno-threadsafe-statics -fno-strict-aliasing -mmacosx-version-min=10.7 -std=c++11 -stdlib=libc++ -I/usr/local/Cellar/opencv/2.4.12_2/include/opencv -I/usr/local/Cellar/opencv/2.4.12_2/include -MMD -MF ./Release/.deps/Release/obj.target/opencv/src/Features2d.o.d.raw  -c -o Release/obj.target/opencv/src/Features2d.o ../src/Features2d.cc
 Release/obj.target/opencv/src/Features2d.o: ../src/Features2d.cc \
   ../src/Features2d.h ../src/OpenCV.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/v8/include/v8.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/v8/include/v8stdint.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/v8/include/v8config.h \
-  /Users/sirius/.node-gyp/0.12.0/src/node.h \
-  /Users/sirius/.node-gyp/0.12.0/src/node_version.h \
-  /Users/sirius/.node-gyp/0.12.0/src/node_object_wrap.h \
-  /Users/sirius/.node-gyp/0.12.0/src/node_buffer.h \
-  /Users/sirius/.node-gyp/0.12.0/src/smalloc.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/v8.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/v8-version.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/v8config.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/node.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/node_version.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/node_object_wrap.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/node_buffer.h \
   /usr/local/Cellar/opencv/2.4.12_2/include/opencv/cv.h \
   /usr/local/Cellar/opencv/2.4.12_2/include/opencv2/core/core_c.h \
   /usr/local/Cellar/opencv/2.4.12_2/include/opencv2/core/types_c.h \
@@ -62,17 +61,17 @@ Release/obj.target/opencv/src/Features2d.o: ../src/Features2d.cc \
   /usr/local/Cellar/opencv/2.4.12_2/include/opencv2/highgui/highgui_c.h \
   /usr/local/Cellar/opencv/2.4.12_2/include/opencv2/highgui/highgui.hpp \
   ../node_modules/nan/nan.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-errno.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-version.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-unix.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-threadpool.h \
-  /Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-darwin.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/uv.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/uv-errno.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/uv-version.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/uv-unix.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/uv-threadpool.h \
+  /Users/sirius/.node-gyp/4.3.2/include/node/uv-darwin.h \
   ../node_modules/nan/nan_callbacks.h \
   ../node_modules/nan/nan_callbacks_12_inl.h \
-  ../node_modules/nan/nan_maybe_pre_43_inl.h \
+  ../node_modules/nan/nan_maybe_43_inl.h \
   ../node_modules/nan/nan_converters.h \
-  ../node_modules/nan/nan_converters_pre_43_inl.h \
+  ../node_modules/nan/nan_converters_43_inl.h \
   ../node_modules/nan/nan_new.h \
   ../node_modules/nan/nan_implementation_12_inl.h \
   ../node_modules/nan/nan_persistent_12_inl.h \
@@ -81,14 +80,13 @@ Release/obj.target/opencv/src/Features2d.o: ../src/Features2d.cc \
 ../src/Features2d.cc:
 ../src/Features2d.h:
 ../src/OpenCV.h:
-/Users/sirius/.node-gyp/0.12.0/deps/v8/include/v8.h:
-/Users/sirius/.node-gyp/0.12.0/deps/v8/include/v8stdint.h:
-/Users/sirius/.node-gyp/0.12.0/deps/v8/include/v8config.h:
-/Users/sirius/.node-gyp/0.12.0/src/node.h:
-/Users/sirius/.node-gyp/0.12.0/src/node_version.h:
-/Users/sirius/.node-gyp/0.12.0/src/node_object_wrap.h:
-/Users/sirius/.node-gyp/0.12.0/src/node_buffer.h:
-/Users/sirius/.node-gyp/0.12.0/src/smalloc.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/v8.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/v8-version.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/v8config.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/node.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/node_version.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/node_object_wrap.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/node_buffer.h:
 /usr/local/Cellar/opencv/2.4.12_2/include/opencv/cv.h:
 /usr/local/Cellar/opencv/2.4.12_2/include/opencv2/core/core_c.h:
 /usr/local/Cellar/opencv/2.4.12_2/include/opencv2/core/types_c.h:
@@ -142,17 +140,17 @@ Release/obj.target/opencv/src/Features2d.o: ../src/Features2d.cc \
 /usr/local/Cellar/opencv/2.4.12_2/include/opencv2/highgui/highgui_c.h:
 /usr/local/Cellar/opencv/2.4.12_2/include/opencv2/highgui/highgui.hpp:
 ../node_modules/nan/nan.h:
-/Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv.h:
-/Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-errno.h:
-/Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-version.h:
-/Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-unix.h:
-/Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-threadpool.h:
-/Users/sirius/.node-gyp/0.12.0/deps/uv/include/uv-darwin.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/uv.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/uv-errno.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/uv-version.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/uv-unix.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/uv-threadpool.h:
+/Users/sirius/.node-gyp/4.3.2/include/node/uv-darwin.h:
 ../node_modules/nan/nan_callbacks.h:
 ../node_modules/nan/nan_callbacks_12_inl.h:
-../node_modules/nan/nan_maybe_pre_43_inl.h:
+../node_modules/nan/nan_maybe_43_inl.h:
 ../node_modules/nan/nan_converters.h:
-../node_modules/nan/nan_converters_pre_43_inl.h:
+../node_modules/nan/nan_converters_43_inl.h:
 ../node_modules/nan/nan_new.h:
 ../node_modules/nan/nan_implementation_12_inl.h:
 ../node_modules/nan/nan_persistent_12_inl.h:

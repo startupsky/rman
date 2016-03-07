@@ -1,6 +1,7 @@
 function BinaryArrayFromImage(imagePath, width, height)
 {
     var cv = require('../opencv/lib/opencv');
+    var result = Array()
     cv.readImage(imagePath, function(err, im) {
   if (err) throw err;
   var w = im.width();
@@ -39,7 +40,8 @@ im.convertGrayscale();
    }
    binaryImage.save('./convertedImage.jpg');
 
-   return imageMatrix;
+   result = imageMatrix;
 });
+   return result
 }
 exports.BinaryArrayFromImage = BinaryArrayFromImage;
