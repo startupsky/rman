@@ -37,7 +37,6 @@ gameConfigs.set("pacman", {
         HealthPoint: 1,
         AttackPoint: 1,
         AttackRange: 1,
-        AttackProperty: "Passive",
         AttackRole: "Bean",
         AttackReward: 1,
         Percentage:80,
@@ -48,8 +47,7 @@ gameConfigs.set("pacman", {
         Description: 'Kill Pacman',
         HealthPoint: 1,
         AttackPoint: 1,
-        AttackRange: 1,
-        AttackProperty: "active",
+        AttackRange: 0,
         AttackRole: "Pacman",
         AttackReward: 10,
         Percentage:20,
@@ -97,7 +95,6 @@ function Player(userid, x, y, gameid)
     this.Y = y
     this.Userid = userid
     this.GameID = gameid.toString()
-    this.Score = 0
     this.Role = "pacman"
     
     // TODO: will be removed later
@@ -261,7 +258,6 @@ function SetupMap(game, channelService){
 function CanAttack(player, go)
 {
     if(player.CloneRole.AttackPoint > 0 // player can attack
-            && player.CloneRole.AttackProperty === "Passive" // player passive attack
             && player.CloneRole.AttackRange > 0
             && go.CloneRole.HealthPoint > 0 // go is still alive
     )
@@ -274,32 +270,32 @@ function CanAttack(player, go)
     }
     return false
 }
-function UpdateMap(gameid, userid, range)
+function UpdateMap(gameid, userid)
 {
-	var distanceX = range/111000.0
-	var distanceY = distanceX	
-    console.log("distance for bean (eat): " + distanceX)
 
     var gomap = maps.get(gameid)
-    var player = gomap.get("player_"+userid)
+    var playergo = gomap.get("player_"+userid)
+    
+	var distanceX = playergo.CloneRole.AttackRange/111000.0
+	var distanceY = distanceX	
 
     gomap.forEach(function loop(go, goid, map) {
-        if (CanAttack(player, go)){ 
+        if (CanAttack(playergo, go)){ 
             var startX = parseFloat(go.X) -  parseFloat(distanceX.toString())
             var stopX = parseFloat(go.X) + parseFloat(distanceX.toString())
             var startY = parseFloat(go.Y) -  parseFloat(distanceY.toString())
             var stopY = parseFloat(go.Y) + parseFloat(distanceY.toString())        
             
-            if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY)
+            if( playergo.X > startX && playergo.X < stopX && playergo.Y > startY && playergo.Y < stopY)
             {
-                go.CloneRole.HealthPoint = go.CloneRole.HealthPoint - player.CloneRole.AttackPoint
+                go.CloneRole.HealthPoint = go.CloneRole.HealthPoint - playergo.CloneRole.AttackPoint
 
-                console.log("UpdateMap: ["+ player.CloneRole.Name + "]("+ player.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
+                console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
 
-                player.Score = player.Score + player.CloneRole.AttackReward
+                playergo.Score = playergo.Score + playergo.CloneRole.AttackReward
                 var channel = channels.get(gameid)
                 channel.pushMessage('onMapUpdate', {goid: goid, go: go});
-                channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score}); 
+                channel.pushMessage('onPlayerScore', {userid: userid, score: playergo.Score}); 
             }
         }
     })
@@ -667,7 +663,7 @@ GameRemote.prototype.report = function (msg, next) {
                 {
                     playergo.X = x
                     playergo.Y = y
-                    UpdateMap(player.GameID, userid, 0.5)                 
+                    UpdateMap(player.GameID, userid)                 
                 }                
             }
         }
@@ -934,10 +930,14 @@ GameRemote.prototype.attackrange = function (msg, next) {
     if(players.has(userid))
     {
         player = players.get(userid)
-        if(player.State === "normal")
-        {
-            UpdateMap(player.GameID, userid, range)                 
-        }
+        
+        var gameid = player.GameID
+        var gomap = maps.get(gameid)
+        var playergo = gomap.get("player_"+userid)
+        var oldrange = playergo.CloneRole.AttackRange
+        playergo.CloneRole.AttackRange = range
+        UpdateMap(gameid, userid)
+        playergo.CloneRole.AttackRange = oldrange
     }
 
     next(null, {
