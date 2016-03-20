@@ -25,6 +25,46 @@ var GameRemote = function(app) {
 
 var currentgameid = 0;
 
+var gameConfigs = new Map()
+gameConfigs.set("pacman", {
+  Name: 'pacman',
+  Description: 'eat bean game',
+  Roles:
+    [
+      {
+        Name: 'Pacman',
+        Description: 'eat bean',
+        HealthPoint: 1,
+        AttackPoint: 1,
+        AttackRange: 1,
+        AttackProperty: "passive",
+        AttackRole: "Bean",
+        Percentage:80,
+        AI:false
+      },
+      {
+        Name: 'Ghost',
+        Description: 'Kill Pacman',
+        HealthPoint: 1,
+        AttackPoint: 1,
+        AttackRange: 1,
+        AttackProperty: "active",
+        AttackRole: "Pacman",
+        Percentage:20,
+        AI:false
+      },
+      {
+        Name: 'Bean',
+        Description: 'bean',
+        HealthPoint: 1,
+        AttackPoint: 0,
+        AttackRange: 0,
+        Percentage:80,
+        AI:true
+      }      
+    ]
+})
+
 var games = new Map()
 var maps = new Map()
 var players = new Map()
@@ -58,7 +98,28 @@ function Player(userid, x, y, gameid)
     this.GameID = gameid.toString()
     this.Score = 0
     this.Role = "pacman"
+    
+    // TODO: will be removed later
     this.State = "normal"
+    
+    this.AttackPoint = 1
+    this.AttackRange = 1
+    this.AttackProperty = "Passive"
+    this.TargetRole = ["bean"]
+    this.HealthPoint = 1
+}
+
+function Item(name, description, targetRole, itemProperty)
+{
+    this.Name = name
+    this.Description = description
+    this.TargetRole = targetRole
+    this.ItemProperty = itemProperty
+}
+
+function StopCondition(time, role)
+{
+    
 }
 
 function Game(userid, gamename, maxplayer, city, x1, y1, x2, y2, gametype) {
@@ -90,15 +151,32 @@ function GameObject(id, x, y, role, displayname, state)
 }
 
 function SetupMap(game, channelService){
+    
+    // get game config by game type
+    var gameConfig = gameConfigs.get(game.GameType)
+    if(!gameConfig)
+    {
+        throw "No game config found for " + game.GameType
+    }
+    
     var distanceX = 2/11000.0 // 2m
     var distanceY = 2/11000.0 // 2m
     console.log("distance for bean (setup): " + distanceX)
     
     var gomap = new Map();
     
+    var roles = gameConfig.Roles
+    
     // assign role for players
-    // assume pacman:ghost = 3
-    var ratio = 3
+    // TODO: now assume only 2 roles for players to simplify the logic, and the first 2 are for players
+    // and the 1st role has more number
+    if(roles.length < 2)
+    {
+        throw "At least need 2 Roles in the game for " + game.GameType
+    }
+    var majorRole = roles[0]
+    var minorRole = roles[1]
+    var ratio = Math.floor(majorRole.Percentage/minorRole.Percentage)
     for (var i = 0; i < game.CurrentPlayers.length; i++) 
     {
         var userid = game.CurrentPlayers[i]
@@ -106,9 +184,9 @@ function SetupMap(game, channelService){
         {
             var player = players.get(userid)
             var playergoid = "player_" + userid
-            var role = "pacman"
+            var role = majorRole
             if (i % (ratio + 1) == 0)
-                role = "ghost"
+                role = minorRole
             
             var channel = channels.get(game.ID.toString())
             var member = channel.getMember(userid)
@@ -119,11 +197,11 @@ function SetupMap(game, channelService){
                     uid: member.uid,
                     sid: member.sid                        
                 })
-                var param = {role: role, instruction: "your role is to ..."}
+                var param = {role: role.Name, instruction: role.Description}
                 channelService.pushMessageByUids('onRoleAssigned', param, receivers);                            
             }
-            player.Role = role
-            var playergo = new GameObject(playergoid, player.X, player.Y, role, userid, "normal")
+            player.Role = role.Name
+            var playergo = new GameObject(playergoid, player.X, player.Y, role.Name, userid, "normal")
             gomap.set(playergoid, playergo)
         }
     }
@@ -406,19 +484,21 @@ GameRemote.prototype.start = function (msg, next) {
                     }
                 }
                 
-                // if(allplayersinsidemap)
-                // {
+                // TODO: set to true for testing purpose
+                allplayersinsidemap = true
+                if(allplayersinsidemap)
+                {
                     success = true
                     message = ""
                     game.State = GAME_STATE_STARTED
                     SetupMap(game, this.channelService)
                     var channel = channels.get(gameid)
                     channel.pushMessage('onStart', {user:userid});                    
-                // }
-                // else
-                // {
-                //     message = PLAYERS_OUT_OF_GAME
-                // }
+                }
+                else
+                {
+                    message = PLAYERS_OUT_OF_GAME
+                }
             }
             else {
                 message = GAME_NOT_READY
