@@ -78,7 +78,7 @@ gameConfigs.set("pacman", {
         },
         {
             Type: "Timer",
-            Count: 30,  //unit: second
+            Count: 300,  //unit: second, 5min
             Winer: "Ghost"
         }
     ]
@@ -148,6 +148,7 @@ function Game(userid, gamename, maxplayer, city, x1, y1, x2, y2, gametype) {
     this.CurrentPlayers.push(userid)
     this.State = GAME_STATE_WAITING
     this.Distance = NaN
+    this.Roles = new Map()
 }
 
 function GameObject(id, x, y, role, displayname, state)
@@ -162,9 +163,10 @@ function GameObject(id, x, y, role, displayname, state)
     this.Score = 0
 }
 
-function GameStopInfo(gameid)
+function GameStopInfo(gameid, winer)
 {
     this.GameID = gameid
+    this.Winer = winer
     this.Players = []
 }
 
@@ -218,6 +220,16 @@ function SetupMap(game, channelService){
             var cloneRole = JSON.parse(JSON.stringify(role))
             var playergo = new GameObject(playergoid, player.X, player.Y, cloneRole, userid, "normal")
             gomap.set(playergoid, playergo)
+            
+            var gameRole = game.Roles.get(role.Name)
+            if(!gameRole)
+            {
+                game.Roles.set(role.Name, 1)
+            }
+            else
+            {
+                game.Roles.set(role.Name, gameRole+1)
+            }
         }
     }
 
@@ -270,7 +282,17 @@ function SetupMap(game, channelService){
                     roleid = roleid + 1
                     var cloneRole = JSON.parse(JSON.stringify(role))
                     var beango = new GameObject(rolegoid, pointX.toString(), pointY.toString(), cloneRole, role.Name, "normal")
-                    gomap.set(rolegoid, beango)           
+                    gomap.set(rolegoid, beango)
+                    
+                    var gameRole = game.Roles.get(role.Name)
+                    if(!gameRole)
+                    {
+                        game.Roles.set(role.Name, 1)
+                    }
+                    else
+                    {
+                        game.Roles.set(role.Name, gameRole+1)
+                    }    
                 }
             }
         }        
@@ -297,6 +319,7 @@ function CanAttack(player, go)
 function UpdateMap(gameid, userid)
 {
     var gomap = maps.get(gameid)
+    var game = games.get(gameid)
     var playergo = gomap.get("player_"+userid)
     
 	var distanceX = playergo.CloneRole.AttackRange/111000.0
@@ -312,6 +335,13 @@ function UpdateMap(gameid, userid)
             if( playergo.X > startX && playergo.X < stopX && playergo.Y > startY && playergo.Y < stopY)
             {
                 go.CloneRole.HealthPoint = go.CloneRole.HealthPoint - playergo.CloneRole.AttackPoint
+                
+                if(go.CloneRole.HealthPoint <= 0)
+                {
+                    var roleName = go.CloneRole.Name
+                    var roleCount = game.Roles.get(roleName)
+                    game.Roles.set(roleName, roleCount-1)                    
+                }
 
                 console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
 
@@ -339,8 +369,19 @@ function UpdateGameStopCondition(gameid)
             console.log(now.getTime())
             if((now.getTime() - game.StartTime) > (condition.Count * 1000))
             {
-                game.Winer = stopCondition.Winer
+                game.Winer = condition.Winer
                 DeleteGame(gameid)
+                return
+            }
+        }
+        else if(condition.Type === "RoleCondition")
+        {
+            var roleCount = game.Roles.get(condition.Role)
+            if(roleCount == condition.Count)
+            {
+                game.Winer = condition.Winer
+                DeleteGame(gameid)
+                return
             }
         }
     }
@@ -623,7 +664,7 @@ function DeleteGame(gameid)
     var gomap = maps.get(gameid)
     var game = games.get(gameid)
     
-    var gameStopInfo = new GameStopInfo(gameid)
+    var gameStopInfo = new GameStopInfo(gameid, game.Winer)
     
     for(var playerid of game.CurrentPlayers)
     {
