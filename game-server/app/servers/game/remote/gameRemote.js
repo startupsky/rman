@@ -27,42 +27,60 @@ var currentgameid = 0;
 
 var gameConfigs = new Map()
 gameConfigs.set("pacman", {
-  Name: 'pacman',
-  Description: 'eat bean game',
-  Roles:
-    [
-      {
-        Name: 'Pacman',
-        Description: 'eat bean',
-        HealthPoint: 1,
-        AttackPoint: 1,
-        AttackRange: 1,
-        AttackRole: "Bean",
-        AttackReward: 1,
-        Percentage:80,
-        AI:false
-      },
-      {
-        Name: 'Ghost',
-        Description: 'Kill Pacman',
-        HealthPoint: 1,
-        AttackPoint: 1,
-        AttackRange: 0,
-        AttackRole: "Pacman",
-        AttackReward: 10,
-        Percentage:20,
-        AI:false
-      },
-      {
-        Name: 'Bean',
-        Description: 'bean',
-        HealthPoint: 1,
-        AttackPoint: 0,
-        AttackRange: 0,
-        Distance:2,
-        Pattern: "Spread",
-        AI:true
-      }      
+    Name: 'pacman',
+    Description: 'eat bean game',
+    Roles: [
+        {
+            Name: 'Pacman',
+            Description: 'eat bean',
+            HealthPoint: 1,
+            AttackPoint: 1,
+            AttackRange: 1,
+            AttackRole: "Bean",
+            AttackReward: 1,
+            Percentage: 80,
+            AI: false
+        },
+        {
+            Name: 'Ghost',
+            Description: 'Kill Pacman',
+            HealthPoint: 1,
+            AttackPoint: 1,
+            AttackRange: 0,
+            AttackRole: "Pacman",
+            AttackReward: 10,
+            Percentage: 20,
+            AI: false
+        },
+        {
+            Name: 'Bean',
+            Description: 'bean',
+            HealthPoint: 1,
+            AttackPoint: 0,
+            AttackRange: 0,
+            Distance: 2,
+            Pattern: "Spread",
+            AI: true
+        }
+    ],
+    StopCondition: [
+        {
+            Type: "RoleCondition",
+            Role: "Bean",
+            Count: 0,
+            Winer: "Pacman"
+        },
+        {
+            Type: "RoleCondition",
+            Role: "Pacman",
+            Count: 0,
+            Winer: "Ghost"
+        },
+        {
+            Type: "Timer",
+            Count: 30,  //unit: second
+            Winer: "Ghost"
+        }
     ]
 })
 
@@ -142,6 +160,12 @@ function GameObject(id, x, y, role, displayname, state)
     this.DisplayName = displayname
     this.State = state
     this.Score = 0
+}
+
+function GameStopInfo(gameid)
+{
+    this.GameID = gameid
+    this.Players = []
 }
 
 function SetupMap(game, channelService){
@@ -272,7 +296,6 @@ function CanAttack(player, go)
 }
 function UpdateMap(gameid, userid)
 {
-
     var gomap = maps.get(gameid)
     var playergo = gomap.get("player_"+userid)
     
@@ -299,6 +322,28 @@ function UpdateMap(gameid, userid)
             }
         }
     })
+    
+    UpdateGameStopCondition(gameid)
+}
+
+function UpdateGameStopCondition(gameid)
+{
+    var game = games.get(gameid)
+    var stopCondition = gameConfigs.get(game.GameType).StopCondition
+    for(var i = 0; i < stopCondition.length; i++)
+    {
+        var condition = stopCondition[i]
+        if(condition.Type === "Timer")
+        {
+            var now = new Date()
+            console.log(now.getTime())
+            if((now.getTime() - game.StartTime) > (condition.Count * 1000))
+            {
+                game.Winer = stopCondition.Winer
+                DeleteGame(gameid)
+            }
+        }
+    }
 }
 
 GameRemote.prototype.create = function (msg, serverid, next) { 
@@ -339,6 +384,7 @@ GameRemote.prototype.create = function (msg, serverid, next) {
     
         var player = new Player(userid, parseFloat(msg.playerx), parseFloat(msg.playery), game.ID)
         players.set(userid,player)
+
         games.set(game.ID.toString(), game)
     }
 
@@ -513,6 +559,8 @@ GameRemote.prototype.start = function (msg, next) {
                     success = true
                     message = ""
                     game.State = GAME_STATE_STARTED
+                    var d = new Date();
+                    game.StartTime = d.getTime();
                     SetupMap(game, this.channelService)
                     var channel = channels.get(gameid)
                     channel.pushMessage('onStart', {user:userid});                    
@@ -571,19 +619,26 @@ GameRemote.prototype.stop = function (msg, next) {
 
 // delete game. 1) delete users. 2) save scores. 3) delete game. 4) delete channel. 5) delete game map.
 function DeleteGame(gameid)
-{
+{ 
     var gomap = maps.get(gameid)
-    
     var game = games.get(gameid)
+    
+    var gameStopInfo = new GameStopInfo(gameid)
+    
     for(var playerid of game.CurrentPlayers)
     {
         players.delete(playerid)
         var playergo = gomap.get("player_"+playerid)
         if(!!playergo)
         {
-            SaveUserInfo(playerid, playergo.Score)               
+            SaveUserInfo(playerid, playergo.Score) 
+            gameStopInfo.Players.push(playerid + ":" + playergo.Score)              
         }
     }
+    
+    var channel = channels.get(gameid)
+    channel.pushMessage('onStop', gameStopInfo);
+    
     games.delete(gameid)     
     channels.delete(gameid)
     maps.delete(gameid)

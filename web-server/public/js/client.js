@@ -171,6 +171,10 @@ $(document).ready(function() {
     pomelo.on('onStart', function(data){
         alert("game started!")
     })
+        
+    pomelo.on('onStop', function(data){
+        alert("game stopped!" + JSON.stringify(data))
+    })
     
     pomelo.on('onPlayerUpdate', function(data){
         addOutput("onPlayerUpdate:" + JSON.stringify(data))
