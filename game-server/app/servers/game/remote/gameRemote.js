@@ -37,8 +37,9 @@ gameConfigs.set("pacman", {
         HealthPoint: 1,
         AttackPoint: 1,
         AttackRange: 1,
-        AttackProperty: "passive",
+        AttackProperty: "Passive",
         AttackRole: "Bean",
+        AttackReward: 1,
         Percentage:80,
         AI:false
       },
@@ -50,6 +51,7 @@ gameConfigs.set("pacman", {
         AttackRange: 1,
         AttackProperty: "active",
         AttackRole: "Pacman",
+        AttackReward: 10,
         Percentage:20,
         AI:false
       },
@@ -74,16 +76,14 @@ var channels = new Map()
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017/rman';
 
-function SaveUserInfo(userid)
+function SaveUserInfo(userid, score)
 {
-    var player = players.get(userid)
-   
     MongoClient.connect(url, function (err, db) {
         var collection = db.collection('User');
         var result = collection.find({"name": userid}, {"score":1,"_id":0})
         result.each(function(err, doc) {
             if (doc != null) {
-                var newscore = parseInt(doc.score) + player.Score
+                var newscore = parseInt(doc.score) + score
                 collection.update({'name':userid},{$set:{'score':newscore}})
             } 
             db.close();
@@ -102,12 +102,6 @@ function Player(userid, x, y, gameid)
     
     // TODO: will be removed later
     this.State = "normal"
-    
-    this.AttackPoint = 1
-    this.AttackRange = 1
-    this.AttackProperty = "Passive"
-    this.TargetRole = ["bean"]
-    this.HealthPoint = 1
 }
 
 function Item(name, description, targetRole, itemProperty)
@@ -146,9 +140,11 @@ function GameObject(id, x, y, role, displayname, state)
     this.GOID = id
     this.X = x
     this.Y = y
-    this.Role = role
+    this.Role = role.Name
+    this.CloneRole = role
     this.DisplayName = displayname
     this.State = state
+    this.Score = 0
 }
 
 function SetupMap(game, channelService){
@@ -198,7 +194,8 @@ function SetupMap(game, channelService){
                 channelService.pushMessageByUids('onRoleAssigned', param, receivers);                            
             }
             player.Role = role.Name
-            var playergo = new GameObject(playergoid, player.X, player.Y, role.Name, userid, "normal")
+            var cloneRole = JSON.parse(JSON.stringify(role))
+            var playergo = new GameObject(playergoid, player.X, player.Y, cloneRole, userid, "normal")
             gomap.set(playergoid, playergo)
         }
     }
@@ -250,7 +247,8 @@ function SetupMap(game, channelService){
                     
                     var rolegoid = role.Name + "_"+ roleid
                     roleid = roleid + 1
-                    var beango = new GameObject(rolegoid, pointX.toString(), pointY.toString(), role.Name, role.Name, "normal")
+                    var cloneRole = JSON.parse(JSON.stringify(role))
+                    var beango = new GameObject(rolegoid, pointX.toString(), pointY.toString(), cloneRole, role.Name, "normal")
                     gomap.set(rolegoid, beango)           
                 }
             }
@@ -260,6 +258,22 @@ function SetupMap(game, channelService){
     maps.set(game.ID.toString(), gomap)
 }
 
+function CanAttack(player, go)
+{
+    if(player.CloneRole.AttackPoint > 0 // player can attack
+            && player.CloneRole.AttackProperty === "Passive" // player passive attack
+            && player.CloneRole.AttackRange > 0
+            && go.CloneRole.HealthPoint > 0 // go is still alive
+    )
+    {
+        var attackRoles = player.CloneRole.AttackRole.split(",")
+        if(attackRoles.indexOf(go.CloneRole.Name) > -1)
+        {
+            return true
+        }
+    }
+    return false
+}
 function UpdateMap(gameid, userid, range)
 {
 	var distanceX = range/111000.0
@@ -267,35 +281,25 @@ function UpdateMap(gameid, userid, range)
     console.log("distance for bean (eat): " + distanceX)
 
     var gomap = maps.get(gameid)
-    var player = players.get(userid)
+    var player = gomap.get("player_"+userid)
 
     gomap.forEach(function loop(go, goid, map) {
-        if (go.State == "normal"){
-            var startX = parseFloat((go.X - distanceX).toString())
+        if (CanAttack(player, go)){ 
+            var startX = parseFloat(go.X) -  parseFloat(distanceX.toString())
             var stopX = parseFloat(go.X) + parseFloat(distanceX.toString())
-            var startY = parseFloat((go.Y - distanceY).toString())
+            var startY = parseFloat(go.Y) -  parseFloat(distanceY.toString())
             var stopY = parseFloat(go.Y) + parseFloat(distanceY.toString())        
             
             if( player.X > startX && player.X < stopX && player.Y > startY && player.Y < stopY)
             {
-                if(go.Role === "bean" && player.Role === "pacman")
-                {
-                    console.log("UpdateMap: eat bean :[" +  go.X + "][" + go.Y + "]")
-                    go.State = "eaten"
-                    player.Score = player.Score + 1
-                    var channel = channels.get(gameid)
-                    channel.pushMessage('onMapUpdate', {goid: goid, go: go});
-                    channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score});                        
-                }
-                else if(go.Role === "pacman" && player.Role === "ghost")
-                {
-                    console.log("UpdateMap: eat pacman :[" +  go.X + "][" + go.Y + "]")
-                    go.State = "dead"
-                    player.Score = player.Score + 10
-                    var channel = channels.get(gameid)
-                    channel.pushMessage('onMapUpdate', {goid: goid, go: go});
-                    channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score});                        
-                }
+                go.CloneRole.HealthPoint = go.CloneRole.HealthPoint - player.CloneRole.AttackPoint
+
+                console.log("UpdateMap: ["+ player.CloneRole.Name + "]("+ player.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
+
+                player.Score = player.Score + player.CloneRole.AttackReward
+                var channel = channels.get(gameid)
+                channel.pushMessage('onMapUpdate', {goid: goid, go: go});
+                channel.pushMessage('onPlayerScore', {userid: userid, score: player.Score}); 
             }
         }
     })
@@ -460,8 +464,7 @@ GameRemote.prototype.leave = function (msg, serverid, next) {
             channel.leave(userid, serverid)
             channel.pushMessage('onLeave', {user:userid});
             if (game.CurrentPlayers.length == 0) {
-                games.delete(gameid)
-                channels.delete(gameid)
+                DeleteGame(gameid)
             }
             else if (game.Host == userid) {
                 game.Host = game.CurrentPlayers[0]
@@ -553,11 +556,7 @@ GameRemote.prototype.stop = function (msg, next) {
                 message = ""
                 game.State = GAME_STATE_STOPPED
                 
-                for(var playerid of game.CurrentPlayers)
-                {
-                    players.delete(playerid)
-                }
-                SaveUserInfo(userid)
+                DeleteGame(gameid)
             }
             else {
                 message = GAME_NOT_STARTED
@@ -573,6 +572,26 @@ GameRemote.prototype.stop = function (msg, next) {
         message: message
     });
 };
+
+// delete game. 1) delete users. 2) save scores. 3) delete game. 4) delete channel. 5) delete game map.
+function DeleteGame(gameid)
+{
+    var gomap = maps.get(gameid)
+    
+    var game = games.get(gameid)
+    for(var playerid of game.CurrentPlayers)
+    {
+        players.delete(playerid)
+        var playergo = gomap.get("player_"+playerid)
+        if(!!playergo)
+        {
+            SaveUserInfo(playerid, playergo.Score)               
+        }
+    }
+    games.delete(gameid)     
+    channels.delete(gameid)
+    maps.delete(gameid)
+}
 
 GameRemote.prototype.querymap = function (msg, next) {
     var gameid = msg.gameid
@@ -634,7 +653,7 @@ GameRemote.prototype.report = function (msg, next) {
             }
         }
         else if(player.State === "normal")
-        {
+        {       
             player.X = x
             player.Y = y
 
@@ -747,8 +766,7 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
                 channel.leave(kickuserid, serverid)
                 channel.pushMessage('onLeave', {user:kickuserid});
                 if (game.CurrentPlayers.length == 0) {
-                    games.delete(gameid)
-                    channels.delete(gameid)
+                    DeleteGame(gameid)
                 }
                 else if (game.Host == userid) {
                     game.Host = game.CurrentPlayers[0]
