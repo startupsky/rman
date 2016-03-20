@@ -59,7 +59,8 @@ gameConfigs.set("pacman", {
         HealthPoint: 1,
         AttackPoint: 0,
         AttackRange: 0,
-        Percentage:80,
+        Distance:2,
+        Pattern: "Spread",
         AI:true
       }      
     ]
@@ -159,16 +160,12 @@ function SetupMap(game, channelService){
         throw "No game config found for " + game.GameType
     }
     
-    var distanceX = 2/11000.0 // 2m
-    var distanceY = 2/11000.0 // 2m
-    console.log("distance for bean (setup): " + distanceX)
-    
     var gomap = new Map();
     
     var roles = gameConfig.Roles
     
-    // assign role for players
-    // TODO: now assume only 2 roles for players to simplify the logic, and the first 2 are for players
+    // Part 1: assign role for players
+    // TODO: now assume 2 roles for players to simplify the logic, and the first 2 are for players
     // and the 1st role has more number
     if(roles.length < 2)
     {
@@ -206,34 +203,60 @@ function SetupMap(game, channelService){
         }
     }
 
-    var row = Math.round((game.Y2-game.Y1)/distanceY)
-    var column = Math.round((game.X2 - game.X1)/distanceX)
-    
-    console.log(" row:"+row)
-    console.log(" column:"+column)
-    console.log(process.cwd())
+    // Part 2: assign non-player roles
+    // TODO: assume the AI roles start from index 2
+    for(var i = 2; i < roles.length; i++)
+    {
+        var role = roles[i]
+        if(!role.AI)
+        {
+            continue
+        }
+        var distanceX = role.Distance/11000.0 // 2m
+        var distanceY = distanceX
+            
+        var row = Math.round((game.Y2-game.Y1)/distanceY)
+        var column = Math.round((game.X2 - game.X1)/distanceX)
+        
+        console.log("Map grid for role: " + role.Name)
+        console.log(" row:"+row)
+        console.log(" column:"+column)
+        console.log(process.cwd())
 
-    var result = new Array();
-    var improcesser = require('../../ImageProcesser/imangeHandler/ImageProcesser');
-    result = improcesser.BinaryArrayFromImage('./taiji.jpg',row,column);
-    
-
-    var beanid = 0
-    for (var i = 0; i < row; i++){
-        for (var j=0; j < column;j++){
-            if(result[i][j]==1)
+        var result;
+        if(role.Pattern === "Picture")
+        {
+            var improcesser = require('../../ImageProcesser/imangeHandler/ImageProcesser');
+            result = improcesser.BinaryArrayFromImage('./taiji.jpg',row,column);
+        }
+        else if(role.Pattern === "Spread")
+        {
+            result = new Array()
+            for(var i = 0;i<row;i++)
             {
-                var pointX = game.X1 + 0.5*distanceX + i*distanceX
-                var pointY = game.Y1 + 0.5*distanceY + j*distanceY
-                
-                var beangoid = "bean_"+beanid
-                beanid = beanid + 1
-                var beango = new GameObject(beangoid, pointX.toString(), pointY.toString(), "bean", "bean", "normal")
-               	gomap.set(beangoid, beango)           
+                result[i] = new Array()
+                for(var j=0;j<column;j++)
+                    result[i][j] = 1
             }
         }
+
+        var roleid = 0
+        for (var i = 0; i < row; i++){
+            for (var j=0; j < column;j++){
+                if(result[i][j]==1)
+                {
+                    var pointX = game.X1 + 0.5*distanceX + i*distanceX
+                    var pointY = game.Y1 + 0.5*distanceY + j*distanceY
+                    
+                    var rolegoid = role.Name + "_"+ roleid
+                    roleid = roleid + 1
+                    var beango = new GameObject(rolegoid, pointX.toString(), pointY.toString(), role.Name, role.Name, "normal")
+                    gomap.set(rolegoid, beango)           
+                }
+            }
+        }        
     }
-    
+
     maps.set(game.ID.toString(), gomap)
 }
 
