@@ -36,10 +36,10 @@ gameConfigs.set("pacman", {
             HealthPoint: 1,
             AttackPoint: 1,
             AttackRange: 1,
-            AttackRole: "Bean",
-            AttackReward: 1,
+            AttackRole: "Bean,Freezer",
+            AttackReward: 10,
             Percentage: 80,
-            AI: false
+            Type: "Player"
         },
         {
             Name: 'Ghost',
@@ -47,10 +47,9 @@ gameConfigs.set("pacman", {
             HealthPoint: 1,
             AttackPoint: 1,
             AttackRange: 0,
-            AttackRole: "Pacman",
-            AttackReward: 10,
+            AttackRole: "Pacman,Freezer",
             Percentage: 20,
-            AI: false
+            Type: "Player"
         },
         {
             Name: 'Bean',
@@ -58,9 +57,26 @@ gameConfigs.set("pacman", {
             HealthPoint: 1,
             AttackPoint: 0,
             AttackRange: 0,
+            AttackReward: 1,
             Distance: 2,
             Pattern: "Spread",
-            AI: true
+            Type: "AI"
+        },
+        {
+            Name: 'Freezer',
+            Description: 'Freezer',
+            HealthPoint: 1,
+            AttackPoint: 0,
+            AttackRange: 0,
+            Number: 6,
+            Pattern: "Spread",
+            Type: "Item",
+            Effects:[]
+        }
+    ],
+    Effects: [
+        {
+            
         }
     ],
     StopCondition: [
@@ -235,45 +251,74 @@ function SetupMap(game, channelService){
 
     // Part 2: assign non-player roles
     // TODO: assume the AI roles start from index 2
-    for(var i = 2; i < roles.length; i++)
+    for(var index = 2; index < roles.length; index++)
     {
-        var role = roles[i]
-        if(!role.AI)
-        {
-            continue
-        }
-        var distanceX = role.Distance/11000.0 // 2m
-        var distanceY = distanceX
-            
-        var row = Math.round((game.Y2-game.Y1)/distanceY)
-        var column = Math.round((game.X2 - game.X1)/distanceX)
+        var role = roles[index]
+        var distribution;
         
-        console.log("Map grid for role: " + role.Name)
-        console.log(" row:"+row)
-        console.log(" column:"+column)
-        console.log(process.cwd())
-
-        var result;
-        if(role.Pattern === "Picture")
+        if(role.Type === "AI")
         {
-            var improcesser = require('../../ImageProcesser/imangeHandler/ImageProcesser');
-            result = improcesser.BinaryArrayFromImage('./taiji.jpg',row,column);
-        }
-        else if(role.Pattern === "Spread")
+            var distanceX = role.Distance/11000.0
+            var distanceY = distanceX
+                
+            var row = Math.round((game.Y2-game.Y1)/distanceY)
+            var column = Math.round((game.X2 - game.X1)/distanceX)
+            
+            console.log("Map grid for role: " + role.Name)
+            console.log(" row:"+row)
+            console.log(" column:"+column)
+            console.log(process.cwd())
+    
+            if(role.Pattern === "Picture")
+            {
+                var improcesser = require('../../ImageProcesser/imangeHandler/ImageProcesser');
+                distribution = improcesser.BinaryArrayFromImage('./taiji.jpg',row,column);
+            }
+            else if(role.Pattern === "Spread")
+            {
+                distribution = new Array()
+                for(var i = 0;i<row;i++)
+                {
+                    distribution[i] = new Array()
+                    for(var j=0;j<column;j++)
+                        distribution[i][j] = 1
+                }
+            }
+        }  
+        else if(role.Type === "Item")  
         {
-            result = new Array()
+            var distanceX = 2/11000.0 // 2m for the item
+            var distanceY = distanceX
+                
+            var row = Math.round((game.Y2-game.Y1)/distanceY)
+            var column = Math.round((game.X2 - game.X1)/distanceX)
+                        
+            distribution = new Array()
             for(var i = 0;i<row;i++)
             {
-                result[i] = new Array()
+                distribution[i] = new Array()
                 for(var j=0;j<column;j++)
-                    result[i][j] = 1
-            }
-        }
+                    distribution[i][j] = 0
+            }     
+            var itemNumber = role.Number
+            console.log(itemNumber)
+            var count = 0
+            while(count < itemNumber)
+            {
+                var rowIndex = Math.floor((Math.random() * row));
+                var columnIndex = Math.floor((Math.random() * column));
+                if(distribution[rowIndex][columnIndex]==0)
+                {
+                    distribution[rowIndex][columnIndex] = 1
+                    count++
+                }
+            }       
+        } 
 
         var roleid = 0
         for (var i = 0; i < row; i++){
             for (var j=0; j < column;j++){
-                if(result[i][j]==1)
+                if(distribution[i][j]==1)
                 {
                     var pointX = game.X1 + 0.5*distanceX + i*distanceX
                     var pointY = game.Y1 + 0.5*distanceY + j*distanceY
@@ -295,7 +340,7 @@ function SetupMap(game, channelService){
                     }    
                 }
             }
-        }        
+        } 
     }
 
     maps.set(game.ID.toString(), gomap)
@@ -345,7 +390,7 @@ function UpdateMap(gameid, userid)
 
                 console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
 
-                playergo.Score = playergo.Score + playergo.CloneRole.AttackReward
+                playergo.Score = playergo.Score + go.CloneRole.AttackReward
                 var channel = channels.get(gameid)
                 channel.pushMessage('onMapUpdate', {goid: goid, go: go});
                 channel.pushMessage('onPlayerScore', {userid: userid, score: playergo.Score}); 
