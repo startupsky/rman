@@ -150,30 +150,30 @@ $(document).ready(function() {
 	//update user list
 	pomelo.on('onAdd', function(data) {
 		var user = data.user;
-		alert("add: " + user);
+		addOutput("add: " + user);
 	});
 
 	//update user list
 	pomelo.on('onLeave', function(data) {
 		var user = data.user;
-		alert("leave: " + user);
+		addOutput("leave: " + user);
 	});
 
     pomelo.on('onChat', function(data){
-        alert("From: " + data.from + ", Msg: " + data.msg)
+        addOutput("From: " + data.from + ", Msg: " + data.msg)
     })
     
     pomelo.on("onJoin", function(data) {
 		var user = data.user;
-		alert("join: " + user);
+		addOutput("join: " + user);
 	});
     
     pomelo.on('onStart', function(data){
-        alert("game started!")
+        addOutput("game started!")
     })
         
     pomelo.on('onStop', function(data){
-        alert("game stopped!" + JSON.stringify(data))
+        addOutput("game stopped!" + JSON.stringify(data))
     })
     
     pomelo.on('onPlayerUpdate', function(data){
@@ -188,32 +188,36 @@ $(document).ready(function() {
         addOutput("onPlayerScore:" + JSON.stringify(data))
     })
     
+    pomelo.on('onPlayerItem', function(data){
+        addOutput("onPlayerItem:" + JSON.stringify(data))
+    })
+    
     pomelo.on('onRoleAssigned', function(data){
-        alert("onRoleAssigned:" + JSON.stringify(data))
+        addOutput("onRoleAssigned:" + JSON.stringify(data))
     })
         
     pomelo.on('onPlayerFreezed', function(data){
-        alert("onPlayerFreezed:" + JSON.stringify(data))
+        addOutput("onPlayerFreezed:" + JSON.stringify(data))
     })
                 
     pomelo.on('onPlayerUnFreezed', function(data){
-        alert("onPlayerUnFreezed:" + JSON.stringify(data))
+        addOutput("onPlayerUnFreezed:" + JSON.stringify(data))
     })
     
     pomelo.on('onOutScope', function(data){
-        alert("onOutScope:" + JSON.stringify(data))
+        addOutput("onOutScope:" + JSON.stringify(data))
     })
         
     pomelo.on('onPlayerTargeted', function(data){
-        alert("onPlayerTargeted:" + JSON.stringify(data))
+        addOutput("onPlayerTargeted:" + JSON.stringify(data))
     })    
         
     pomelo.on('onReachTarget', function(data){
-        alert("onReachTarget:" + JSON.stringify(data))
+        addOutput("onReachTarget:" + JSON.stringify(data))
     })      
         
     pomelo.on('onNotReachTarget', function(data){
-        alert("onNotReachTarget:" + JSON.stringify(data))
+        addOutput("onNotReachTarget:" + JSON.stringify(data))
     })  
     
     

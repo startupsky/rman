@@ -36,8 +36,11 @@ gameConfigs.set("pacman", {
             HealthPoint: 1,
             AttackPoint: 1,
             AttackRange: 1,
-            AttackRole: "Bean,Freezer",
+            AttackRole: "Bean",
             AttackReward: 10,
+            AcquireRange: 1,
+            AcquireRole: "Freezer",
+            AcquireLimit:3,
             Percentage: 80,
             Type: "Player"
         },
@@ -47,7 +50,10 @@ gameConfigs.set("pacman", {
             HealthPoint: 1,
             AttackPoint: 1,
             AttackRange: 0,
-            AttackRole: "Pacman,Freezer",
+            AttackRole: "Pacman",
+            AcquireRange: 1,
+            AcquireRole: "Freezer",
+            AcquireLimit:3,
             Percentage: 20,
             Type: "Player"
         },
@@ -63,20 +69,21 @@ gameConfigs.set("pacman", {
             Type: "AI"
         },
         {
-            Name: 'Freezer',
-            Description: 'Freezer',
+            Name: "Freezer",
+            Description: "Freeze Player",
             HealthPoint: 1,
-            AttackPoint: 0,
-            AttackRange: 0,
             Number: 6,
             Pattern: "Spread",
             Type: "Item",
-            Effects:[]
-        }
-    ],
-    Effects: [
-        {
-            
+            Result:
+            {
+                Timer:60, //unit: second
+                MoveRange:1,
+                AttackRange:0
+            },
+            AttackRange:10, //unit: m
+            TargetRole:"Pacman, Ghost",
+            Effect:[]
         }
     ],
     StopCondition: [
@@ -177,6 +184,7 @@ function GameObject(id, x, y, role, displayname, state)
     this.DisplayName = displayname
     this.State = state
     this.Score = 0
+    this.Items = []
 }
 
 function GameStopInfo(gameid, winer)
@@ -285,7 +293,7 @@ function SetupMap(game, channelService){
                 }
             }
         }  
-        else if(role.Type === "Item")  
+        else if(role.Type === "Item")  // random distribute based on number
         {
             var distanceX = 2/11000.0 // 2m for the item
             var distanceY = distanceX
@@ -346,55 +354,86 @@ function SetupMap(game, channelService){
     maps.set(game.ID.toString(), gomap)
 }
 
-function CanAttack(player, go)
+function CanAttack(playergo, go)
 {
-    if(player.CloneRole.AttackPoint > 0 // player can attack
-            && player.CloneRole.AttackRange > 0
+    if(playergo.CloneRole.AttackPoint > 0 // player can attack
+            && playergo.CloneRole.AttackRange > 0
             && go.CloneRole.HealthPoint > 0 // go is still alive
     )
     {
-        var attackRoles = player.CloneRole.AttackRole.split(",")
+        var attackRoles = playergo.CloneRole.AttackRole.split(",")
         if(attackRoles.indexOf(go.CloneRole.Name) > -1)
         {
-            return true
+            var attackrange = playergo.CloneRole.AttackRange/111000.0
+            return IsInRange(parseFloat(playergo.X), parseFloat(playergo.Y),parseFloat(go.X),parseFloat(go.Y), attackrange)
         }
     }
     return false
 }
+
+function CanAcquire(playergo, go)
+{
+    if(playergo.Items.length < playergo.CloneRole.AcquireLimit && playergo.CloneRole.AcquireRange > 0 && go.CloneRole.HealthPoint > 0)
+    {
+        var acquireRoles = playergo.CloneRole.AcquireRole.split(",")
+        if(acquireRoles.indexOf(go.CloneRole.Name) > -1)
+        {
+            var acquirerange = playergo.CloneRole.AcquireRange/111000.0
+            return IsInRange(parseFloat(playergo.X), parseFloat(playergo.Y),parseFloat(go.X),parseFloat(go.Y), acquirerange)
+        }
+    }
+    return false
+}
+
+function IsInRange(x1, y1, x2, y2, range)
+{
+    var startX2 = x2 - range
+    var stopX2 = x2 + range
+    var startY2 = y2 - range
+    var stopY2 = y2 + range     
+    
+    return x1 > startX2 && x1 < stopX2 && y1 > startY2 && y1 < stopY2
+}
+
 function UpdateMap(gameid, userid)
 {
     var gomap = maps.get(gameid)
     var game = games.get(gameid)
     var playergo = gomap.get("player_"+userid)
-    
-	var distanceX = playergo.CloneRole.AttackRange/111000.0
-	var distanceY = distanceX	
 
     gomap.forEach(function loop(go, goid, map) {
-        if (CanAttack(playergo, go)){ 
-            var startX = parseFloat(go.X) -  parseFloat(distanceX.toString())
-            var stopX = parseFloat(go.X) + parseFloat(distanceX.toString())
-            var startY = parseFloat(go.Y) -  parseFloat(distanceY.toString())
-            var stopY = parseFloat(go.Y) + parseFloat(distanceY.toString())        
+        if (CanAttack(playergo, go))
+        {     
+            go.CloneRole.HealthPoint = go.CloneRole.HealthPoint - playergo.CloneRole.AttackPoint
             
-            if( playergo.X > startX && playergo.X < stopX && playergo.Y > startY && playergo.Y < stopY)
+            if(go.CloneRole.HealthPoint <= 0)
             {
-                go.CloneRole.HealthPoint = go.CloneRole.HealthPoint - playergo.CloneRole.AttackPoint
-                
-                if(go.CloneRole.HealthPoint <= 0)
-                {
-                    var roleName = go.CloneRole.Name
-                    var roleCount = game.Roles.get(roleName)
-                    game.Roles.set(roleName, roleCount-1)                    
-                }
-
-                console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
-
-                playergo.Score = playergo.Score + go.CloneRole.AttackReward
-                var channel = channels.get(gameid)
-                channel.pushMessage('onMapUpdate', {goid: goid, go: go});
-                channel.pushMessage('onPlayerScore', {userid: userid, score: playergo.Score}); 
+                var roleName = go.CloneRole.Name
+                var roleCount = game.Roles.get(roleName)
+                game.Roles.set(roleName, roleCount-1)                    
             }
+
+            console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
+
+            playergo.Score = playergo.Score + go.CloneRole.AttackReward
+            var channel = channels.get(gameid)
+            channel.pushMessage('onMapUpdate', {goid: goid, go: go});
+            channel.pushMessage('onPlayerScore', {userid: userid, score: playergo.Score}); 
+        }
+        else if(CanAcquire(playergo, go))
+        {
+            go.CloneRole.HealthPoint = 0
+
+            var roleName = go.CloneRole.Name
+            var roleCount = game.Roles.get(roleName)
+            game.Roles.set(roleName, roleCount-1)                    
+
+            console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " acquire [" + go.CloneRole.Name + "](" + go.GOID +")")
+
+            playergo.Items.push(go.CloneRole.Name)
+            var channel = channels.get(gameid)
+            channel.pushMessage('onMapUpdate', {goid: goid, go: go});
+            channel.pushMessage('onPlayerItem', {userid: userid, items: playergo.Items});                   
         }
     })
     
@@ -411,7 +450,6 @@ function UpdateGameStopCondition(gameid)
         if(condition.Type === "Timer")
         {
             var now = new Date()
-            console.log(now.getTime())
             if((now.getTime() - game.StartTime) > (condition.Count * 1000))
             {
                 game.Winer = condition.Winer
