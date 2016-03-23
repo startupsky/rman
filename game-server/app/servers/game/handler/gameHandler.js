@@ -78,3 +78,7 @@ handler.targetuser = function (msg, session, next) {
 handler.attackrange = function (msg, session, next) {
     this.app.rpc.game.gameRemote.attackrange(session, msg, next);
 };
+
+handler.useitem = function (msg, session, next) {
+    this.app.rpc.game.gameRemote.useitem(session, msg, next);
+};

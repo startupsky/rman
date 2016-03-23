@@ -219,7 +219,10 @@ $(document).ready(function() {
     pomelo.on('onNotReachTarget', function(data){
         addOutput("onNotReachTarget:" + JSON.stringify(data))
     })  
-    
+            
+    pomelo.on('onPlayerBeItemed', function(data){
+        addOutput("onPlayerBeItemed:" + JSON.stringify(data))
+    })  
     
         
 	//handle disconect message, occours when the client is disconnect with servers
@@ -558,6 +561,24 @@ $(document).ready(function() {
 			}
         });
     });  
+    
+    $("#useitem").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var targetuserid = $("#kickuserid").attr("value");
+        var item = $("#itemname").attr("value")
+        var route = "game.gameHandler.useitem";
+        pomelo.request(route, {
+            gameid: gameid,
+            userid: userid,
+            targetuserid: targetuserid,
+            item: item
+        }, function(data) {
+            if(!data.success)
+            {
+				addOutput(data.message);
+			}
+        });
+    });      
 });
 
                      

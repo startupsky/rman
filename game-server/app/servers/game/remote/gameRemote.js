@@ -611,17 +611,8 @@ GameRemote.prototype.leave = function (msg, serverid, next) {
 
     if(games.has(gameid))
     {
-        var game = games.get(gameid)
-        var index = -1
-        for(var i = 0;i<game.CurrentPlayers.length;i++)
-        {
-            if(game.CurrentPlayers[i] === userid)
-            {
-                index = i
-                break
-            }
-        }            
-        if (index > -1) {
+        var game = games.get(gameid)            
+        if (game.CurrentPlayers.indexOf(userid) > -1) {
             message = ""
             success = true
             players.delete(userid)
@@ -922,17 +913,8 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
     if(games.has(gameid))
     {
         var game = games.get(gameid)
-        if (userid === game.Host) {
-            var index = -1
-            for(var i = 0;i<game.CurrentPlayers.length;i++)
-            {
-                if(game.CurrentPlayers[i] === kickuserid)
-                {
-                    index = i
-                    break
-                }
-            }            
-            if (index > -1) {
+        if (userid === game.Host) {           
+            if (game.CurrentPlayers.indexOf(kickuserid) > -1) {
                 message = ""
                 success = true
                 players.delete(kickuserid)
@@ -964,6 +946,52 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
 };
 
 
+GameRemote.prototype.useitem = function (msg, next) {
+    var gameid = msg.gameid
+    var userid = msg.userid
+    var item = msg.item
+    var targetuserid = msg.targetuserid
+    var success = false
+    var message = GAME_NOT_FOUND
+
+    if(games.has(gameid))
+    {
+        var game = games.get(gameid)
+        var gomap = maps.get(gameid)
+        if(!!gomap)
+        {
+            var playergo = gomap.get("player_"+userid)
+            
+            var index = playergo.Items.indexOf(item)
+            if (index > -1) {          
+                if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
+                    message = ""
+                    success = true
+                    var channel = channels.get(gameid)
+                    channel.pushMessage('onPlayerBeItemed', {user:targetuserid})
+                    // TODO: need apply result here
+                    
+                    playergo.Items.splice(index, 1)
+                    channel.pushMessage('onPlayerItem', {userid: userid, items: playergo.Items});   
+                }
+                else
+                {
+                    message = USER_NOT_IN_GAME
+                }
+            }
+            else {
+                message = NOT_CAPABLE
+            }             
+        }
+       
+    }
+
+    next(null, {
+        success: success,
+        message: message
+    });
+};
+
 GameRemote.prototype.freezeuser = function (msg, next) {
     var gameid = msg.gameid
     var userid = msg.userid
@@ -974,17 +1002,8 @@ GameRemote.prototype.freezeuser = function (msg, next) {
     if(games.has(gameid))
     {
         var game = games.get(gameid)
-        if (true) { // later need check if user have this ability
-            var index = -1
-            for(var i = 0;i<game.CurrentPlayers.length;i++)
-            {
-                if(game.CurrentPlayers[i] === freezeuserid)
-                {
-                    index = i
-                    break
-                }
-            }            
-            if (index > -1) {
+        if (true) { // later need check if user have this ability          
+            if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
                 message = ""
                 success = true
                 var channel = channels.get(gameid)
@@ -1018,17 +1037,8 @@ GameRemote.prototype.unfreezeuser = function (msg, next) {
     if(games.has(gameid))
     {
         var game = games.get(gameid)
-        if (true) { // later need check if user have this ability
-            var index = -1
-            for(var i = 0;i<game.CurrentPlayers.length;i++)
-            {
-                if(game.CurrentPlayers[i] === unfreezeuserid)
-                {
-                    index = i
-                    break
-                }
-            }            
-            if (index > -1) {
+        if (true) { // later need check if user have this ability          
+            if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
                 message = ""
                 success = true
                 var channel = channels.get(gameid)
@@ -1064,17 +1074,8 @@ GameRemote.prototype.targetuser = function (msg, next) {
     if(games.has(gameid))
     {
         var game = games.get(gameid)
-        if (true) { // later need check if user have this ability
-            var index = -1
-            for(var i = 0;i<game.CurrentPlayers.length;i++)
-            {
-                if(game.CurrentPlayers[i] === targetuserid)
-                {
-                    index = i
-                    break
-                }
-            }            
-            if (index > -1) {
+        if (true) { // later need check if user have this ability          
+            if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
                 message = ""
                 success = true
                 var channel = channels.get(gameid)
