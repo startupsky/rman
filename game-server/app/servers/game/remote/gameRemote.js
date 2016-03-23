@@ -185,6 +185,7 @@ function GameObject(id, x, y, role, displayname, state)
     this.State = state
     this.Score = 0
     this.Items = []
+    this.ItemGos = []
 }
 
 function GameStopInfo(gameid, winer)
@@ -431,6 +432,8 @@ function UpdateMap(gameid, userid)
             console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " acquire [" + go.CloneRole.Name + "](" + go.GOID +")")
 
             playergo.Items.push(go.CloneRole.Name)
+            playergo.ItemGos.push(go)
+            
             var channel = channels.get(gameid)
             channel.pushMessage('onMapUpdate', {goid: goid, go: go});
             channel.pushMessage('onPlayerItem', {userid: userid, items: playergo.Items});                   
@@ -972,12 +975,58 @@ GameRemote.prototype.useitem = function (msg, next) {
                     // TODO: need apply result here
                     
                     playergo.Items.splice(index, 1)
+                    playergo.ItemGos.splice(index, 1)
                     channel.pushMessage('onPlayerItem', {userid: userid, items: playergo.Items});   
                 }
                 else
                 {
                     message = USER_NOT_IN_GAME
                 }
+            }
+            else {
+                message = NOT_CAPABLE
+            }             
+        }
+       
+    }
+
+    next(null, {
+        success: success,
+        message: message
+    });
+};
+
+GameRemote.prototype.dropitem = function (msg, next) {
+    var gameid = msg.gameid
+    var userid = msg.userid
+    var item = msg.item
+    var success = false
+    var message = GAME_NOT_FOUND
+
+    if(games.has(gameid))
+    {
+        var game = games.get(gameid)
+        var gomap = maps.get(gameid)
+        if(!!gomap)
+        {
+            var playergo = gomap.get("player_"+userid)
+            
+            var index = playergo.Items.indexOf(item)
+            if (index > -1) {          
+
+                message = ""
+                success = true
+                var channel = channels.get(gameid)
+                
+                var go = playergo.ItemGos[index]
+                go.X = playergo.X
+                go.Y = playergo.Y
+                go.CloneRole.HealthPoint = 1
+                channel.pushMessage('onMapUpdate', {goid: go.ID, go: go});
+                
+                playergo.Items.splice(index, 1)
+                playergo.ItemGos.splice(index, 1)
+                channel.pushMessage('onPlayerItem', {userid: userid, items: playergo.Items});   
             }
             else {
                 message = NOT_CAPABLE

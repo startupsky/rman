@@ -578,7 +578,23 @@ $(document).ready(function() {
 				addOutput(data.message);
 			}
         });
-    });      
+    });   
+     
+    $("#dropitem").click(function () {
+        var gameid = $("#gameid").attr("value");
+        var item = $("#itemname").attr("value")
+        var route = "game.gameHandler.dropitem";
+        pomelo.request(route, {
+            gameid: gameid,
+            userid: userid,
+            item: item
+        }, function(data) {
+            if(!data.success)
+            {
+				addOutput(data.message);
+			}
+        });
+    });        
 });
 
                      
