@@ -220,10 +220,13 @@ $(document).ready(function() {
         addOutput("onNotReachTarget:" + JSON.stringify(data))
     })  
             
-    pomelo.on('onPlayerBeItemed', function(data){
-        addOutput("onPlayerBeItemed:" + JSON.stringify(data))
+    pomelo.on('onPlayerUnderItem', function(data){
+        addOutput("onPlayerUnderItem:" + JSON.stringify(data))
     })  
     
+    pomelo.on('onPlayerOffItem', function(data){
+        addOutput("onPlayerOffItem:" + JSON.stringify(data))
+    })  
         
 	//handle disconect message, occours when the client is disconnect with servers
 	pomelo.on('disconnect', function(reason) {
@@ -567,11 +570,17 @@ $(document).ready(function() {
         var targetuserid = $("#kickuserid").attr("value");
         var item = $("#itemname").attr("value")
         var route = "game.gameHandler.useitem";
+                
+        var targetx = $("#x_target").attr("value")
+        var targety = $("#y_target").attr("value")
+        
         pomelo.request(route, {
             gameid: gameid,
             userid: userid,
             targetuserid: targetuserid,
-            item: item
+            item: item,
+            targetx: targetx,
+            targety: targety
         }, function(data) {
             if(!data.success)
             {
