@@ -27,127 +27,138 @@ var GameRemote = function(app) {
 var currentgameid = 0;
 
 var gameConfigs = new Map()
-gameConfigs.set("pacman", {
-    Name: 'pacman',
-    Description: 'eat bean game',
-    Roles: [
-        {
-            Name: 'Pacman',
-            Description: 'eat bean',
-            HealthPoint: 1,
-            AttackPoint: 1,
-            AttackRange: 1,
-            AttackRole: "Bean",
-            AttackReward: 10,
-            AcquireRange: 1,
-            AcquireRole: "Freezer,Targeter,RangeAttacker",
-            AcquireLimit:3,
-            Percentage: 80,
-            Type: "Player"
-        },
-        {
-            Name: 'Ghost',
-            Description: 'Kill Pacman',
-            HealthPoint: 1,
-            AttackPoint: 1,
-            AttackRange: 0,
-            AttackRole: "Pacman",
-            AcquireRange: 1,
-            AcquireRole: "Freezer,Targeter,RangeAttacker",
-            AcquireLimit:3,
-            Percentage: 20,
-            Type: "Player"
-        },
-        {
-            Name: 'Bean',
-            Description: 'bean',
-            HealthPoint: 1,
-            AttackPoint: 0,
-            AttackRange: 0,
-            AttackReward: 1,
-            Distance: 2,
-            Pattern: "Spread",
-            Type: "AI"
-        },
-        {
-            Name: "Freezer",
-            Description: "Freeze Player",
-            HealthPoint: 1,
-            Number: 6,
-            Pattern: "Spread",
-            Type: "Item",
-            Result:
-            [
-                {
-                    Type:"Timer",
-                    Count: 30, //unit: second
-                    MoveRange: 0,
-                    AttackRange: 0
-                }
-            ],
-            AttackRange:10, //unit: m
-            TargetRole:"Pacman, Ghost",
-            Effect:[]
-        }
-        ,
-        {
-            Name: "Targeter",
-            Description: "Target Player",
-            HealthPoint: 1,
-            Number: 4,
-            Pattern: "Spread",
-            Type: "Item",
-            Result:
-            [
-                {
-                    Type:"Target",
-                    AttackRange: 0
-                }
-            ],
-            AttackRange:10, //unit: m
-            TargetRole:"Pacman, Ghost",
-            Effect:[]
-        }
-        ,
-        {
-            Name: "RangeAttacker",
-            Description: "Attack in range",
-            HealthPoint: 1,
-            Number: 4,
-            Pattern: "Spread",
-            Type: "Item",
-            Result:
-            [
-                {
-                    Type:"Once",
-                    AttackRange: 100
-                }
-            ],
-            AttackRange:10, //unit: m
-            TargetRole:"Pacman, Ghost",
-            Effect:[]
-        }
-    ],
-    StopCondition: [
-        {
-            Type: "RoleCondition",
-            Role: "Bean",
-            Count: 0,
-            Winer: "Pacman"
-        },
-        {
-            Type: "RoleCondition",
-            Role: "Pacman",
-            Count: 0,
-            Winer: "Ghost"
-        },
-        {
-            Type: "Timer",
-            Count: 600,  //unit: second, 10min
-            Winer: "Ghost"
-        }
-    ]
-})
+
+var fs = require('fs')
+var dir = "gameconfig"
+var files = fs.readdirSync(dir);
+for(var index=0;index<files.length;index++)
+{
+    var str = fs.readFileSync(dir + "/" + files[index], "utf8")
+    var config = JSON.parse(str)
+    gameConfigs.set(config.Name, config)
+}
+
+// gameConfigs.set("pacman", {
+//     Name: 'pacman',
+//     Description: 'eat bean game',
+//     Roles: [
+//         {
+//             Name: 'Pacman',
+//             Description: 'eat bean',
+//             HealthPoint: 1,
+//             AttackPoint: 1,
+//             AttackRange: 1,
+//             AttackRole: "Bean",
+//             AttackReward: 10,
+//             AcquireRange: 1,
+//             AcquireRole: "Freezer,Targeter,RangeAttacker",
+//             AcquireLimit:3,
+//             Percentage: 80,
+//             Type: "Player"
+//         },
+//         {
+//             Name: 'Ghost',
+//             Description: 'Kill Pacman',
+//             HealthPoint: 1,
+//             AttackPoint: 1,
+//             AttackRange: 0,
+//             AttackRole: "Pacman",
+//             AcquireRange: 1,
+//             AcquireRole: "Freezer,Targeter,RangeAttacker",
+//             AcquireLimit:3,
+//             Percentage: 20,
+//             Type: "Player"
+//         },
+//         {
+//             Name: 'Bean',
+//             Description: 'bean',
+//             HealthPoint: 1,
+//             AttackPoint: 0,
+//             AttackRange: 0,
+//             AttackReward: 1,
+//             Distance: 2,
+//             Pattern: "Spread",
+//             Type: "AI"
+//         },
+//         {
+//             Name: "Freezer",
+//             Description: "Freeze Player",
+//             HealthPoint: 1,
+//             Number: 6,
+//             Pattern: "Spread",
+//             Type: "Item",
+//             Result:
+//             [
+//                 {
+//                     Type:"Timer",
+//                     Count: 30, //unit: second
+//                     MoveRange: 0,
+//                     AttackRange: 0
+//                 }
+//             ],
+//             AttackRange:10, //unit: m
+//             TargetRole:"Pacman, Ghost",
+//             Effect:[]
+//         }
+//         ,
+//         {
+//             Name: "Targeter",
+//             Description: "Target Player",
+//             HealthPoint: 1,
+//             Number: 4,
+//             Pattern: "Spread",
+//             Type: "Item",
+//             Result:
+//             [
+//                 {
+//                     Type:"Target",
+//                     AttackRange: 0
+//                 }
+//             ],
+//             AttackRange:10, //unit: m
+//             TargetRole:"Pacman, Ghost",
+//             Effect:[]
+//         }
+//         ,
+//         {
+//             Name: "RangeAttacker",
+//             Description: "Attack in range",
+//             HealthPoint: 1,
+//             Number: 4,
+//             Pattern: "Spread",
+//             Type: "Item",
+//             Result:
+//             [
+//                 {
+//                     Type:"Once",
+//                     AttackRange: 100
+//                 }
+//             ],
+//             AttackRange:10, //unit: m
+//             TargetRole:"Pacman, Ghost",
+//             Effect:[]
+//         }
+//     ],
+//     StopCondition: [
+//         {
+//             Type: "RoleCondition",
+//             Role: "Bean",
+//             Count: 0,
+//             Winer: "Pacman"
+//         },
+//         {
+//             Type: "RoleCondition",
+//             Role: "Pacman",
+//             Count: 0,
+//             Winer: "Ghost"
+//         },
+//         {
+//             Type: "Timer",
+//             Count: 600,  //unit: second, 10min
+//             Winer: "Ghost"
+//         }
+//     ]
+// })
 
 var games = new Map()
 var maps = new Map()

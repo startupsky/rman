@@ -66,9 +66,9 @@ function addOutput(text) {
     text = util.toStaticHTML(text);
     var content = '<tr>' + '  <td class="date">' + util.timeString(time) + '</td>' + '  <td class="msg-text">' + text + '</td>' + '</tr>';
     messageElement.html(content);
-    $("#gameresultpanel").append(messageElement);
+    $("#gameresultpanel").after(messageElement);
     base += increase;
-    scrollDown(base);
+    //scrollDown(base);
 };
 
 // show tip
