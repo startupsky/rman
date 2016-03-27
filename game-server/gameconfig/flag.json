@@ -1,0 +1,143 @@
+{
+    "Name": "flag",
+    "Description": "acquire flag",
+    "Roles": [
+        {
+            "Name": "Red",
+            "Description": "Get Red Flag",
+            "HealthPoint": 1,
+            "AttackPoint": 1,
+            "AttackRange": 1,
+            "AttackRole": "RedFlag",
+            "AcquireRange": 1,
+            "AcquireRole": "Freezer,Targeter,RangeAttacker",
+            "AcquireLimit": 3,
+            "Percentage": 50,
+            "Type": "Player"
+        },
+        {
+            "Name": "Blue",
+            "Description": "Get Blue Flag",
+            "HealthPoint": 1,
+            "AttackPoint": 1,
+            "AttackRange": 1,
+            "AttackRole": "BlueFlag",
+            "AcquireRange": 1,
+            "AcquireRole": "Freezer,Targeter,RangeAttacker",
+            "AcquireLimit": 3,
+            "Percentage": 50,
+            "Type": "Player"
+        },
+        {
+            "Name": "BlueFlag",
+            "Description": "blue team flag",
+            "HealthPoint": 1,
+            "AttackPoint": 0,
+            "AttackRange": 0,
+            "AttackReward": 1,
+            "Number": 1,
+            "Pattern": "Spread",
+            "Type": "AI"
+        },
+        {
+            "Name": "RedFlag",
+            "Description": "red team flag",
+            "HealthPoint": 1,
+            "AttackPoint": 0,
+            "AttackRange": 0,
+            "AttackReward": 1,
+            "Number": 1,
+            "Pattern": "Spread",
+            "Type": "AI"
+        },        
+        {
+            "Name": "Freezer",
+            "Description": "Freeze Player",
+            "HealthPoint": 1,
+            "Number": 6,
+            "Pattern": "Spread",
+            "Type": "Item",
+            "Result": [
+                {
+                    "Type": "Timer",
+                    "Count": 30,
+                    "MoveRange": 0,
+                    "AttackRange": 0
+                }
+            ],
+            "AttackRange": 10,
+            "TargetRole": "Red, Blue",
+            "Effect": []
+        },
+        {
+            "Name": "Targeter",
+            "Description": "Target Player",
+            "HealthPoint": 1,
+            "Number": 4,
+            "Pattern": "Spread",
+            "Type": "Item",
+            "Result": [
+                {
+                    "Type": "Target",
+                    "AttackRange": 0
+                }
+            ],
+            "AttackRange": 10,
+            "TargetRole": "Red, Blue",
+            "Effect": []
+        },
+        {
+            "Name": "RangeAttacker",
+            "Description": "Attack in range",
+            "HealthPoint": 1,
+            "Number": 4,
+            "Pattern": "Spread",
+            "Type": "Item",
+            "Result": [
+                {
+                    "Type": "Once",
+                    "AttackRange": 100
+                }
+            ],
+            "AttackRange": 10,
+            "TargetRole": "Red, Blue",
+            "Effect": []
+        },
+        {
+            "Name": "Explor",
+            "Description": "Explorer in range",
+            "HealthPoint": 1,
+            "Number": 4,
+            "Pattern": "Spread",
+            "Type": "Item",
+            "Result": [
+                {
+                    "Type": "Once",
+                    "VisualRole": "Red, Blue, RedFlag, BlueFlag"
+                }
+            ],
+            "AttackRange": 10,
+            "TargetRole": "Red, Blue",
+            "Effect": []
+        }
+    ],
+    "StopCondition": [
+        {
+            "Type": "RoleCondition",
+            "Role": "RedFlag",
+            "Count": 0,
+            "Winer": "Red"
+        },
+        {
+            "Type": "RoleCondition",
+            "Role": "BlueFlag",
+            "Count": 0,
+            "Winer": "Blue"
+        },
+        {
+            "Type": "Timer",
+            "Count": 600,
+            "Winer": ""
+        }
+    ]
+}

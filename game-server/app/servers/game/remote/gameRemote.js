@@ -316,7 +316,10 @@ function SetupMap(game, channelService){
         
         if(role.Type === "AI")
         {
-            var distanceX = role.Distance/11000.0
+            var distance = 2
+            if (!!role.Distance)
+                distance = role.Distance
+            var distanceX = distance/11000.0
             var distanceY = distanceX
                 
             var row = Math.round((game.Y2-game.Y1)/distanceY)
@@ -335,11 +338,35 @@ function SetupMap(game, channelService){
             else if(role.Pattern === "Spread")
             {
                 distribution = new Array()
-                for(var i = 0;i<row;i++)
+                if(!!role.Number)
                 {
-                    distribution[i] = new Array()
-                    for(var j=0;j<column;j++)
-                        distribution[i][j] = 1
+                    for(var i = 0;i<row;i++)
+                    {
+                        distribution[i] = new Array()
+                        for(var j=0;j<column;j++)
+                            distribution[i][j] = 0
+                    }     
+                    var itemNumber = role.Number
+                    var count = 0
+                    while(count < itemNumber)
+                    {
+                        var rowIndex = Math.floor((Math.random() * row));
+                        var columnIndex = Math.floor((Math.random() * column));
+                        if(distribution[rowIndex][columnIndex]==0)
+                        {
+                            distribution[rowIndex][columnIndex] = 1
+                            count++
+                        }
+                    }                      
+                }
+                else
+                {
+                    for(var i = 0;i<row;i++)
+                    {
+                        distribution[i] = new Array()
+                        for(var j=0;j<column;j++)
+                            distribution[i][j] = 1
+                    }                    
                 }
             }
         }  
