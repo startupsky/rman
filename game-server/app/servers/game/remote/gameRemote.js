@@ -192,7 +192,7 @@ function Player(userid, x, y, gameid)
     this.Y = y
     this.Userid = userid
     this.GameID = gameid.toString()
-    this.Role = "pacman"
+    this.Role = "demon"
     
     // TODO: will be removed later
     this.State = "normal"
