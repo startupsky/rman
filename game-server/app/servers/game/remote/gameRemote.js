@@ -31,12 +31,15 @@ var gameConfigs = new Map()
 var fs = require('fs')
 var dir = "gameconfig"
 var files = fs.readdirSync(dir);
+console.log(files.length)
 for(var index=0;index<files.length;index++)
 {
     var str = fs.readFileSync(dir + "/" + files[index], "utf8")
     var config = JSON.parse(str)
+    console.log(config.Name)
     gameConfigs.set(config.Name, config)
 }
+console.log(gameConfigs)
 
 // gameConfigs.set("pacman", {
 //     Name: 'pacman',
@@ -248,8 +251,11 @@ function SetupMap(game, channelService){
     
     // get game config by game type
     var gameConfig = gameConfigs.get(game.GameType)
+    console.log(gameConfigs)
+    console.log(game.GameType)
     if(!gameConfig)
     {
+        console.log("No game config found for ")
         throw "No game config found for " + game.GameType
     }
     
@@ -262,6 +268,7 @@ function SetupMap(game, channelService){
     // and the 1st role has more number
     if(roles.length < 2)
     {
+        console.log("At least need 2 Roles in the game for ")
         throw "At least need 2 Roles in the game for " + game.GameType
     }
     var majorRole = roles[0]
@@ -612,6 +619,7 @@ function UpdateGameStopCondition(gameid)
 }
 
 GameRemote.prototype.create = function (msg, serverid, next) { 
+    
     var smallx = parseFloat(msg.x1)
     var bigx = parseFloat(msg.x2)
     if(smallx > bigx)

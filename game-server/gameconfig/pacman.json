@@ -1,14 +1,14 @@
 {
-    "Name": "pacman",
+    "Name": "Angel&Demon",
     "Description": "eat bean game",
     "Roles": [
         {
-            "Name": "Pacman",
-            "Description": "eat bean",
+            "Name": "demon",
+            "Description": "eat apples",
             "HealthPoint": 1,
             "AttackPoint": 1,
             "AttackRange": 1,
-            "AttackRole": "Bean",
+            "AttackRole": "apple",
             "AttackReward": 10,
             "AcquireRange": 1,
             "AcquireRole": "Freezer,Targeter,RangeAttacker",
@@ -17,12 +17,12 @@
             "Type": "Player"
         },
         {
-            "Name": "Ghost",
-            "Description": "Kill Pacman",
+            "Name": "angel",
+            "Description": "kill demon",
             "HealthPoint": 1,
             "AttackPoint": 1,
             "AttackRange": 0,
-            "AttackRole": "Pacman",
+            "AttackRole": "demon",
             "AcquireRange": 1,
             "AcquireRole": "Freezer,Targeter,RangeAttacker",
             "AcquireLimit": 3,
@@ -30,8 +30,8 @@
             "Type": "Player"
         },
         {
-            "Name": "Bean",
-            "Description": "bean",
+            "Name": "apple",
+            "Description": "apple",
             "HealthPoint": 1,
             "AttackPoint": 0,
             "AttackRange": 0,
@@ -56,7 +56,7 @@
                 }
             ],
             "AttackRange": 10,
-            "TargetRole": "Pacman, Ghost",
+            "TargetRole": "demon, angel",
             "Effect": []
         },
         {
@@ -73,7 +73,7 @@
                 }
             ],
             "AttackRange": 10,
-            "TargetRole": "Pacman, Ghost",
+            "TargetRole": "demon, angel",
             "Effect": []
         },
         {
@@ -90,27 +90,27 @@
                 }
             ],
             "AttackRange": 10,
-            "TargetRole": "Pacman, Ghost",
+            "TargetRole": "demon, angel",
             "Effect": []
         }
     ],
     "StopCondition": [
         {
             "Type": "RoleCondition",
-            "Role": "Bean",
+            "Role": "apple",
             "Count": 0,
-            "Winer": "Pacman"
+            "Winer": "demon"
         },
         {
             "Type": "RoleCondition",
-            "Role": "Pacman",
+            "Role": "demon",
             "Count": 0,
-            "Winer": "Ghost"
+            "Winer": "angel"
         },
         {
             "Type": "Timer",
             "Count": 600,
-            "Winer": "Ghost"
+            "Winer": "angel"
         }
     ]
 }
