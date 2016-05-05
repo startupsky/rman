@@ -271,9 +271,10 @@ function SetupMap(game, channelService){
         console.log("At least need 2 Roles in the game for ")
         throw "At least need 2 Roles in the game for " + game.GameType
     }
-    var majorRole = roles[0]
-    var minorRole = roles[1]
+    var majorRole = roles[1]
+    var minorRole = roles[0]
     var ratio = Math.floor(majorRole.Percentage/minorRole.Percentage)
+    
     for (var i = 0; i < game.CurrentPlayers.length; i++) 
     {
         var userid = game.CurrentPlayers[i]
