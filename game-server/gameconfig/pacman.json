@@ -41,7 +41,7 @@
             "Type": "AI"
         },
         {
-            "Name": "Freezer",
+            "Name": "SealOfDevil",
             "Description": "Freeze Player",
             "HealthPoint": 1,
             "Number": 6,
@@ -60,7 +60,7 @@
             "Effect": []
         },
         {
-            "Name": "Targeter",
+            "Name": "DevilBringer",
             "Description": "Target Player",
             "HealthPoint": 1,
             "Number": 4,
