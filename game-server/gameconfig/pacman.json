@@ -1,9 +1,9 @@
 {
-    "Name": "Angel&Demon",
+    "Name": "Angel&deamon",
     "Description": "eat bean game",
     "Roles": [
         {
-            "Name": "demon",
+            "Name": "deamon",
             "Description": "eat apples",
             "HealthPoint": 1,
             "AttackPoint": 1,
@@ -18,11 +18,11 @@
         },
         {
             "Name": "angel",
-            "Description": "kill demon",
+            "Description": "kill deamon",
             "HealthPoint": 1,
             "AttackPoint": 1,
             "AttackRange": 0,
-            "AttackRole": "demon",
+            "AttackRole": "deamon",
             "AcquireRange": 1,
             "AcquireRole": "Freezer,Targeter,RangeAttacker",
             "AcquireLimit": 3,
@@ -56,7 +56,7 @@
                 }
             ],
             "AttackRange": 10,
-            "TargetRole": "demon, angel",
+            "TargetRole": "deamon, angel",
             "Effect": []
         },
         {
@@ -73,7 +73,7 @@
                 }
             ],
             "AttackRange": 10,
-            "TargetRole": "demon, angel",
+            "TargetRole": "deamon, angel",
             "Effect": []
         },
         {
@@ -90,7 +90,7 @@
                 }
             ],
             "AttackRange": 10,
-            "TargetRole": "demon, angel",
+            "TargetRole": "deamon, angel",
             "Effect": []
         }
     ],
@@ -99,17 +99,18 @@
             "Type": "RoleCondition",
             "Role": "apple",
             "Count": 0,
-            "Winer": "demon"
+            "Winer": "deamon"
         },
         {
             "Type": "RoleCondition",
-            "Role": "demon",
+            "Role": "deamon",
             "Count": 0,
             "Winer": "angel"
         },
         {
             "Type": "Timer",
-            "Count": 600,
+            "Role": "timer",
+            "Count": 1800,
             "Winer": "angel"
         }
     ]

@@ -303,3 +303,20 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 }
 
 ```
+
+###OnStateUpdate -- state udpate after condition check
+```
+[
+    {
+        "Role": "deamon",
+        "value": "value"
+    },
+    {
+        "Role": "angel",
+        "value": "value"
+    },
+    {
+        "Role": "Timer",
+        "value": "value"
+    }
+]

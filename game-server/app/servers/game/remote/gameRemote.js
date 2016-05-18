@@ -192,7 +192,7 @@ function Player(userid, x, y, gameid)
     this.Y = y
     this.Userid = userid
     this.GameID = gameid.toString()
-    this.Role = "demon"
+    this.Role = "deamon"
     
     // TODO: will be removed later
     this.State = "normal"
@@ -589,22 +589,31 @@ function UpdatePlayerUnderItem(gameid)
     }
 }
 
-function UpdateGameStopCondition(gameid)
+ function UpdateGameStopCondition(gameid)
 {
     var game = games.get(gameid)
     var stopCondition = gameConfigs.get(game.GameType).StopCondition
+    var stateInfo = []
     for(var i = 0; i < stopCondition.length; i++)
     {
         var condition = stopCondition[i]
         if(condition.Type === "Timer")
         {
             var now = new Date()
-            if((now.getTime() - game.StartTime) > (condition.Count * 1000))
+            var currentTime = condition.Count * 1000 + game.StartTime - now.getTime();
+            if(currentTime <= 0)
             {
                 game.Winer = condition.Winer
                 DeleteGame(gameid)
                 return
             }
+            
+            var hour = parseInt(currentTime/(1000*60*60))
+            var min = parseInt(currentTime/(1000*60))
+            var sec = parseInt(currentTime%(1000*60)).toString().substr(0, 2)
+            var timer= hour+":"+min+":"+sec
+            
+            stateInfo.push({role:condition.Role,value:timer})
         }
         else if(condition.Type === "RoleCondition")
         {
@@ -615,8 +624,12 @@ function UpdateGameStopCondition(gameid)
                 DeleteGame(gameid)
                 return
             }
+            stateInfo.push({role:condition.Role,value:roleCount})
         }
     }
+    
+    var channel = channels.get(gameid)
+    channel.pushMessage('onStateUpdate', {state:stateInfo});
 }
 
 GameRemote.prototype.create = function (msg, serverid, next) { 
