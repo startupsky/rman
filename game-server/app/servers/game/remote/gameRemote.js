@@ -509,7 +509,8 @@ function UpdateMap(gameid, userid, x, y)
                 {
                     var roleName = go.CloneRole.Name
                     var roleCount = game.Roles.get(roleName)
-                    game.Roles.set(roleName, roleCount-1)                    
+                    game.Roles.set(roleName, roleCount-1)  
+                    go.State = "eaten"                  
                 }
 
                 console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
