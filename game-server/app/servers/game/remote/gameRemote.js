@@ -509,8 +509,7 @@ function UpdateMap(gameid, userid, x, y)
                 {
                     var roleName = go.CloneRole.Name
                     var roleCount = game.Roles.get(roleName)
-                    game.Roles.set(roleName, roleCount-1)  
-                    go.State = "eaten"                  
+                    game.Roles.set(roleName, roleCount-1)            
                 }
 
                 console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
@@ -534,7 +533,7 @@ function UpdateMap(gameid, userid, x, y)
                 playergo.ItemGos.push(go)
 
                 channel.pushMessage('onMapUpdate', {goid: goid, go: go});
-                channel.pushMessage('onPlayerItem', {userid: userid, items: playergo.Items});                   
+                channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items});                   
             }
         })              
     }
@@ -1173,7 +1172,7 @@ GameRemote.prototype.useitem = function (msg, next) {
                         
                         playergo.Items.splice(index, 1)
                         playergo.ItemGos.splice(index, 1)
-                        channel.pushMessage('onPlayerItem', {userid: userid, items: playergo.Items});   
+                        channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items});   
                     }
                     else
                     {
@@ -1228,7 +1227,7 @@ GameRemote.prototype.dropitem = function (msg, next) {
                 
                 playergo.Items.splice(index, 1)
                 playergo.ItemGos.splice(index, 1)
-                channel.pushMessage('onPlayerItem', {userid: userid, items: playergo.Items});   
+                channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items});   
             }
             else {
                 message = NOT_CAPABLE

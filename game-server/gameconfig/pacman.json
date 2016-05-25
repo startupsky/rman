@@ -60,7 +60,7 @@
             "Effect": []
         },
         {
-            "Name": "DevilBringer",
+            "Name": "HellWheels",
             "Description": "Target Player",
             "HealthPoint": 1,
             "Number": 4,
@@ -77,7 +77,7 @@
             "Effect": []
         },
         {
-            "Name": "RangeAttacker",
+            "Name": "LightOfPunishment",
             "Description": "Attack in range",
             "HealthPoint": 1,
             "Number": 4,
