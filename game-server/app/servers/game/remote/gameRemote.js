@@ -457,6 +457,9 @@ function CanAttack(playergo, go)
 
 function CanAcquire(playergo, go)
 {
+    Console.log("******itme number ="+playergo.Items)
+    Console.log("******acquire limt="+playergo.CloneRole.AcquireLimit)
+    
     if(playergo.Items.length < playergo.CloneRole.AcquireLimit && playergo.CloneRole.AcquireRange > 0 && go.CloneRole.HealthPoint > 0)
     {
         var acquireRoles = playergo.CloneRole.AcquireRole.split(",")
