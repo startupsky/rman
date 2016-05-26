@@ -11,7 +11,7 @@
             "AttackRole": "apple",
             "AttackReward": 10,
             "AcquireRange": 1,
-            "AcquireRole": "Freezer,Targeter,RangeAttacker",
+            "AcquireRole": "SealOfDevil,HellWheels,LightOfPunishment",
             "AcquireLimit": 3,
             "Percentage": 80,
             "Type": "Player"
@@ -24,7 +24,7 @@
             "AttackRange": 0,
             "AttackRole": "deamon",
             "AcquireRange": 1,
-            "AcquireRole": "Freezer,Targeter,RangeAttacker",
+            "AcquireRole": "LightOfPunishment",
             "AcquireLimit": 3,
             "Percentage": 20,
             "Type": "Player"
