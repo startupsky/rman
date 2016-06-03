@@ -35,3 +35,25 @@ GameObject {
        UnderItem: false } ],
   UnderItem: false }
 
+
+GOID: 'LightOfPunishment_2',
+  X: '39.98094763636364',
+  Y: '116.35073345454546',
+  Role: 'LightOfPunishment',
+  CloneRole: 
+   { Name: 'LightOfPunishment',
+     Description: 'Attack in range',
+     HealthPoint: 0,
+     Number: 4,
+     Pattern: 'Spread',
+     Type: 'Item',
+     Result: [ [Object] ],
+     AttackRange: 10,
+     TargetRole: 'deamon, angel',
+     Effect: [] },
+  DisplayName: 'LightOfPunishment',
+  State: 'normal',
+  Score: 0,
+  Items: [],
+  ItemGos: [],
+  UnderItem: false }

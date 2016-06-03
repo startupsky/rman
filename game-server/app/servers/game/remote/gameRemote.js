@@ -1135,22 +1135,48 @@ GameRemote.prototype.useitem = function (msg, next) {
         if(!!gomap)
         {
             userGo = gomap.get("player_"+userid)
-            console.log(userGo)
-            
-            game.CurrentPlayers.forEach(function(playerid)
+            if(userGo.ItemGos.count<index+1)
             {
-                console.log("xxxx"+playerid)
-                console.log("target role count"+userGo.ItemGos[index].CloneRole.targetRole.count);
+                message = "client is using a item which is not exist!";
+                console.log(message);
+                success = false;
+            }
+            else
+            {
+            game.CurrentPlayers.forEach(function(playerid)
+            {   
+                message = ""
+                success = true
                 
                 var playergo = gomap.get("player_"+playerid)
-                console.log(userGo.ItemGos[index].CloneRole.roleName)
+                
+                if(playergo.UnderItem)  //if the player is under item effect, do nothing, let the poor guy go...
+                {
+                    continue;
+                }
+                
+                var item = JSON.stringify(userGo.ItemGos[index].CloneRole);
+                
+                var targetRoles = item.targetRole.split(",");
+                var targetRoleIndex = targetRoles.indexOf(playergo.Role);
+                
+                if(targetRoleIndex<0)  // not in the target list, do nothing for him/her
+                {
+                    continue;
+                }
+                
                 var attackrange = userGo.ItemGos[index].CloneRole.AttackRange/111000.0
+                console.log("user ID: "+playergo.ID)
                 
                 if(IsInRange(parseFloat(playergo.x),parseFloat(playergo.y),x,y, attackrange))
                 {
-                    console.log(userGo.Role+" use "+userGo.ItemGos[index].CloneRole.roleName+" to "+playergo.Role)
+                    console.log(userGo.Role+" use "+item.Name+" to "+playergo.Role)
+                    
+                    var channel = channels.get(gameid)
+                    channel.pushMessage('onPlayerUnderItem', {user:playergo.ID, item:item})
                 }
             });
+            }
             
             // var playergo = gomap.get("player_"+userid)
             
