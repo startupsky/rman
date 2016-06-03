@@ -1,0 +1,37 @@
+GameObject {
+  GOID: 'player_1',
+  X: 39.978083,
+  Y: 116.357536,
+  Role: 'deamon',
+  CloneRole: 
+   { Name: 'deamon',
+     Description: 'eat apples',
+     HealthPoint: 1,
+     AttackPoint: 1,
+     AttackRange: 1,
+     AttackRole: 'apple',
+     AttackReward: 10,
+     AcquireRange: 1,
+     AcquireRole: 'SealOfDevil,HellWheels,LightOfPunishment',
+     AcquireLimit: 3,
+     Percentage: 80,
+     Type: 'Player' },
+  DisplayName: '1',
+  State: 'normal',
+  Score: 5,
+  Items: [ 'LightOfPunishment' ],
+  ItemGos: 
+   [ GameObject {
+       GOID: 'LightOfPunishment_2',
+       X: '39.978294',
+       Y: '116.35735618181819',
+       Role: 'LightOfPunishment',
+       CloneRole: [Object],
+       DisplayName: 'LightOfPunishment',
+       State: 'normal',
+       Score: 0,
+       Items: [],
+       ItemGos: [],
+       UnderItem: false } ],
+  UnderItem: false }
+
