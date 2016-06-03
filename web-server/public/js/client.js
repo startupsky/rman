@@ -568,7 +568,7 @@ $(document).ready(function() {
     $("#useitem").click(function () {
         var gameid = $("#gameid").attr("value");
         var targetuserid = $("#kickuserid").attr("value");
-        var item = $("#itemname").attr("value")
+        var itemIndex = $("#itemindex").attr("value")
         var route = "game.gameHandler.useitem";
                 
         var targetx = $("#x_target").attr("value")
@@ -578,7 +578,7 @@ $(document).ready(function() {
             gameid: gameid,
             userid: userid,
             targetuserid: targetuserid,
-            item: item,
+            item: itemIndex,
             targetx: targetx,
             targety: targety
         }, function(data) {

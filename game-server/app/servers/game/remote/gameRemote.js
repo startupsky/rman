@@ -460,7 +460,6 @@ function CanAcquire(playergo, go)
     if(playergo.Items.length < playergo.CloneRole.AcquireLimit && playergo.CloneRole.AcquireRange > 0 && go.CloneRole.HealthPoint > 0)
     {
         var acquireRoles = playergo.CloneRole.AcquireRole.split(",")
-        console.log("******acquire roles="+acquireRoles)
         if(acquireRoles.indexOf(go.CloneRole.Name) > -1)
         {
             var acquirerange = playergo.CloneRole.AcquireRange/111000.0
@@ -1112,82 +1111,109 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
 GameRemote.prototype.useitem = function (msg, next) {
     var gameid = msg.gameid
     var userid = msg.userid
-    var item = msg.item
-    var targetuserid = msg.targetuserid
+    var x = parseFloat(msg.x)
+    var y = parseFloat(msg.y)
+    var index = parseInt(msg.itemIndex)
+    var player
+  //  var item = msg.item
+  //  var targetuserid = msg.targetuserid
     var success = false
     var message = GAME_NOT_FOUND
 
+    var targetList;
+    
+    console.log(games)
+
     if(games.has(gameid))
     {
+        console.log("*******IN the game")
         var game = games.get(gameid)
         var gomap = maps.get(gameid)
         if(!!gomap)
         {
-            var playergo = gomap.get("player_"+userid)
+            userGo = gomap.get("player_"+userid)
+            console.log(userGo)
             
-            var index = playergo.Items.indexOf(item)
-            if (index > -1) {          
-                if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
-                    
-                    var targetgo = gomap.get("player_"+targetuserid)
-                    if(!targetgo.UnderItem)
-                    {
-                        message = ""
-                        success = true
-                        var channel = channels.get(gameid)
-                        channel.pushMessage('onPlayerUnderItem', {user:targetuserid, item:item})
-                        
-                        // apply result here
-                        targetgo.UnderItem = true
-                        targetgo.OldRole = JSON.parse(JSON.stringify(targetgo.CloneRole))
-                        var results = playergo.ItemGos[index].CloneRole.Result
-                        for(var resultindex = 0;resultindex<results.length;resultindex++)
-                        {
-                            var result = results[resultindex]
-                            if(typeof(result.MoveRange) != "undefined")
-                            {
-                                targetgo.CloneRole.MoveRange = result.MoveRange
-                            }
-                            if(typeof(result.AttackRange) != "undefined")
-                            {
-                                targetgo.CloneRole.AttackRange = result.AttackRange
-                            }
-                            if(result.Type == "Timer")
-                            {
-                                var now = new Date()
-                                targetgo.UnderItemStartTime = now.getTime()
-                                targetgo.UnderItemStopTime = targetgo.UnderItemStartTime + result.Timer*1000
-                            }
-                            else if(result.Type == "Target")
-                            {
-                                var targetx = parseFloat(msg.targetx)
-                                var targety = parseFloat(msg.targety)
-                                targetgo.TargetX = targetx
-                                targetgo.TargetY = targety
-                            }
-                            else if(result.Type == "Once")
-                            {
-                                targetgo.Once = true
-                            }                            
-                        }
-                        
-                        playergo.Items.splice(index, 1)
-                        playergo.ItemGos.splice(index, 1)
-                        channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items});   
-                    }
-                    else
-                    {
-                        message = USER_UNDER_ITEM
-                    }
-                }
-                else
+            game.CurrentPlayers.forEach(function(playerid)
+            {
+                console.log("xxxx"+playerid)
+                console.log("target role count"+userGo.ItemGos[index].CloneRole.targetRole.count);
+                
+                var playergo = gomap.get("player_"+playerid)
+                console.log(userGo.ItemGos[index].CloneRole.roleName)
+                var attackrange = userGo.ItemGos[index].CloneRole.AttackRange/111000.0
+                
+                if(IsInRange(parseFloat(playergo.x),parseFloat(playergo.y),x,y, attackrange))
                 {
-                    message = USER_NOT_IN_GAME
+                    console.log(userGo.Role+" use "+userGo.ItemGos[index].CloneRole.roleName+" to "+playergo.Role)
                 }
-            }
-            else {
-                message = NOT_CAPABLE
-            }             
+            });
+            
+            // var playergo = gomap.get("player_"+userid)
+            
+            // var index = playergo.Items.indexOf(item)
+            // if (index > -1) {          
+            //     if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
+                    
+            //         var targetgo = gomap.get("player_"+targetuserid)
+            //         if(!targetgo.UnderItem)
+            //         {
+            //             message = ""
+            //             success = true
+            //             var channel = channels.get(gameid)
+            //             channel.pushMessage('onPlayerUnderItem', {user:targetuserid, item:item})
+                        
+            //             // apply result here
+            //             targetgo.UnderItem = true
+            //             targetgo.OldRole = JSON.parse(JSON.stringify(targetgo.CloneRole))
+            //             var results = playergo.ItemGos[index].CloneRole.Result
+            //             for(var resultindex = 0;resultindex<results.length;resultindex++)
+            //             {
+            //                 var result = results[resultindex]
+            //                 if(typeof(result.MoveRange) != "undefined")
+            //                 {
+            //                     targetgo.CloneRole.MoveRange = result.MoveRange
+            //                 }
+            //                 if(typeof(result.AttackRange) != "undefined")
+            //                 {
+            //                     targetgo.CloneRole.AttackRange = result.AttackRange
+            //                 }
+            //                 if(result.Type == "Timer")
+            //                 {
+            //                     var now = new Date()
+            //                     targetgo.UnderItemStartTime = now.getTime()
+            //                     targetgo.UnderItemStopTime = targetgo.UnderItemStartTime + result.Timer*1000
+            //                 }
+            //                 else if(result.Type == "Target")
+            //                 {
+            //                     var targetx = parseFloat(msg.targetx)
+            //                     var targety = parseFloat(msg.targety)
+            //                     targetgo.TargetX = targetx
+            //                     targetgo.TargetY = targety
+            //                 }
+            //                 else if(result.Type == "Once")
+            //                 {
+            //                     targetgo.Once = true
+            //                 }                            
+            //             }
+                        
+            //             playergo.Items.splice(index, 1)
+            //             playergo.ItemGos.splice(index, 1)
+            //             channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items});   
+            //         }
+            //         else
+            //         {
+            //             message = USER_UNDER_ITEM
+            //         }
+            //     }
+            //     else
+            //     {
+            //         message = USER_NOT_IN_GAME
+            //     }
+            // }
+            // else {
+            //     message = NOT_CAPABLE
+            // }             
         }
        
     }
