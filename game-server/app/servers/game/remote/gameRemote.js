@@ -1139,7 +1139,7 @@ GameRemote.prototype.useitem = function (msg, next) {
             
             if(userGo.ItemGos.count<index+1)
             {
-                message = "client is using a item which is not exist!";
+                message = "client is using a item which is not exist! must be somethingwrong";
                 console.log(message);
                 success = false;
             }
@@ -1147,7 +1147,7 @@ GameRemote.prototype.useitem = function (msg, next) {
             {
                 message = "";
                 success = true;
-                
+                 
                 var item = JSON.parse(JSON.stringify(userGo.ItemGos[index].CloneRole));
                 console.log(item);
                 console.log(item.Name);
