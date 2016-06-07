@@ -1129,29 +1129,110 @@ GameRemote.prototype.useitem = function (msg, next) {
 
     if(games.has(gameid))
     {
-        console.log("*******IN the game")
         var game = games.get(gameid)
         var gomap = maps.get(gameid)
         if(!!gomap)
-        {
+        {           
+            
             userGo = gomap.get("player_"+userid)
             console.log(userGo)
             
+            if(userGo.ItemGos.count<index+1)
+            {
+                message = "client is using a item which is not exist!";
+                console.log(message);
+                success = false;
+            }
+            else
+            {
+                message = "";
+                success = true;
+                
+                var item = JSON.parse(JSON.stringify(userGo.ItemGos[index].CloneRole));
+                console.log(item);
+                console.log(item.Name);
+                var targetRoles = item.TargetRole.split(",");
+                var itemResults = item.Result;
+                
             game.CurrentPlayers.forEach(function(playerid)
             {
-                console.log("xxxx"+playerid)
-                console.log("target role count"+userGo.ItemGos[index].CloneRole.targetRole.count);
+                var playergo = gomap.get("player_"+playerid);
+                if(playergo.UnderItem)  //if the player is under item effect, do nothing, let the poor guy go...
+                {
+                    return;
+                }
                 
-                var playergo = gomap.get("player_"+playerid)
-                console.log(userGo.ItemGos[index].CloneRole.roleName)
-                var attackrange = userGo.ItemGos[index].CloneRole.AttackRange/111000.0
+                var targetRoleIndex = targetRoles.indexOf(playergo.Role);
+                
+                if(targetRoleIndex<0)  // not in the target list, do nothing for him/her
+                {
+                    return;
+                }
+                
+                var attackrange = userGo.ItemGos[index].CloneRole.AttackRange/111000.0;
+                console.log(playergo.GOID)
+                console.log(parseInt(playergo.GOID.substr(7, playergo.GOID.length-6)))
                 
                 if(IsInRange(parseFloat(playergo.x),parseFloat(playergo.y),x,y, attackrange))
                 {
-                    console.log(userGo.Role+" use "+userGo.ItemGos[index].CloneRole.roleName+" to "+playergo.Role)
+                     console.log(userGo.Role+" use "+item.Name+" to "+playergo.Role)
+                    
+                     var channel = channels.get(gameid)
+                     channel.pushMessage('onPlayerUnderItem', {user:parseInt(playergo.GOID.substr(6, playergo.GOID.length-6)),item:item})
+                     
+                     
+                     for(var resultindex = 0;resultindex<itemResults.length;resultindex++)
+                        {
+                            var result = itemResults[resultindex]
+                            
+                            if(typeof(result.Power) != "undefined")
+                            {
+                                playergo.HealthPoint = playergo.HealthPoint-result.Power;
+                                
+                                if(playergo.HealthPoint <=0)
+                                {
+                                    var roleCount = game.Roles.get(playergo.Role)
+                                    game.Roles.set(roleName, roleCount-1) 
+                                    console.log("one of "+playergo.Role+" is been eliminate by"+userGo.Role)
+                                    //这里需要添加分数系统逻辑
+                                }
+                            }
+                            
+                            if(typeof(result.MoveRange) != "undefined")
+                            {
+                                playergo.CloneRole.MoveRange = result.MoveRange
+                            }
+                            if(typeof(result.AttackRange) != "undefined")
+                            {
+                                playergo.CloneRole.AttackRange = result.AttackRange
+                            }
+                            
+                            if(result.Type == "Timer")
+                            {
+                                var now = new Date()
+                                targetgo.UnderItemStartTime = now.getTime()
+                                targetgo.UnderItemStopTime = targetgo.UnderItemStartTime + result.Timer*1000
+                            }
+                            else if(result.Type == "Target")
+                            {
+                                var targetx = parseFloat(msg.targetx)
+                                var targety = parseFloat(msg.targety)
+                                targetgo.TargetX = targetx
+                                targetgo.TargetY = targety
+                            }
+                            else if(result.Type == "Once")
+                            {
+                                targetgo.Once = true
+                            }                            
+                        }
+                        
+                        playergo.Items.splice(index, 1)
+                        playergo.ItemGos.splice(index, 1)
+                        channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items}); 
+                     
                 }
             });
-            
+            }
             // var playergo = gomap.get("player_"+userid)
             
             // var index = playergo.Items.indexOf(item)
