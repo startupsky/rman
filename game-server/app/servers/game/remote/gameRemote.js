@@ -784,6 +784,7 @@ GameRemote.prototype.leave = function (msg, serverid, next) {
             players.delete(userid)
             game.CurrentPlayers.splice(index, 1)
             var channel = channels.get(gameid)
+            console.log("***use leave the game.")
             channel.leave(userid, serverid)
             channel.pushMessage('onLeave', {user:userid});
             if (game.CurrentPlayers.length == 0) {
@@ -966,7 +967,7 @@ GameRemote.prototype.report = function (msg, next) {
         {
             if(Math.abs(x-player.X) >= limit || Math.abs(y-player.Y) >= limit)
             {
-                channel.pushMessage('onOutScope', {userid:userid,x:player.X,y:player.Y});                
+                channel.pushMessage('onOutScope', {userid:userid,x:msg.x,y:msg.y});                
             }
         }
         else if(player.State === "target")
@@ -976,11 +977,11 @@ GameRemote.prototype.report = function (msg, next) {
 
             if(Math.abs(player.TargetX-player.X) >= limit || Math.abs(player.TargetY-player.Y) >= limit)
             {
-                channel.pushMessage('onNotReachTarget', {userid:userid,x:player.X,y:player.Y});
+                channel.pushMessage('onNotReachTarget', {userid:userid,x:msg.x,y:msg.y});
             }
             else
             {
-                channel.pushMessage('onReachTarget', {userid:userid,x:player.X,y:player.Y});
+                channel.pushMessage('onReachTarget', {userid:userid,x:msg.x,y:msg.y});
                 player.State = "normal"                                
             }
         }
@@ -989,7 +990,7 @@ GameRemote.prototype.report = function (msg, next) {
             player.X = x
             player.Y = y
 
-            channel.pushMessage('onPlayerUpdate', {userid:userid,x:player.X,y:player.Y});
+            channel.pushMessage('onPlayerUpdate', {userid:userid,x:msg.x,y:msg.y});
                     
             var gomap = maps.get(player.GameID)
             if(!!gomap)
@@ -1085,6 +1086,7 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
                 players.delete(kickuserid)
                 game.CurrentPlayers.splice(index, 1)
                 var channel = channels.get(gameid)
+                console.log("user is been kicked")
                 channel.leave(kickuserid, serverid)
                 channel.pushMessage('onLeave', {user:kickuserid});
                 if (game.CurrentPlayers.length == 0) {
@@ -1169,9 +1171,8 @@ GameRemote.prototype.useitem = function (msg, next) {
                     return;
                 }
                 
+                console.log("find one player in the target list: "+playergo.Role)
                 var attackrange = userGo.ItemGos[index].CloneRole.AttackRange/111000.0;
-                console.log(playergo.GOID)
-                console.log(parseInt(playergo.GOID.substr(7, playergo.GOID.length-6)))
                 
                 if(IsInRange(parseFloat(playergo.x),parseFloat(playergo.y),x,y, attackrange))
                 {
