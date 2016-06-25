@@ -475,6 +475,12 @@ function IsInRange(x1, y1, x2, y2, range)
     var stopX2 = x2 + range
     var startY2 = y2 - range
     var stopY2 = y2 + range     
+    console.log("startX: "+startX2)
+    console.log("startY: "+startY2)
+    console.log("stopX: "+stopX2)
+    console.log("stopY: "+stopY2)
+    
+    console.log("player position:"+x1+" "+y1)
     
     return x1 > startX2 && x1 < stopX2 && y1 > startY2 && y1 < stopY2
 }
@@ -1171,10 +1177,11 @@ GameRemote.prototype.useitem = function (msg, next) {
                     return;
                 }
                 
-                console.log("find one player in the target list: "+playergo.Role)
+                console.log("find one player in the target list: "+playergo)
                 var attackrange = userGo.ItemGos[index].CloneRole.AttackRange/111000.0;
+   
                 
-                if(IsInRange(parseFloat(playergo.x),parseFloat(playergo.y),x,y, attackrange))
+                if(IsInRange(parseFloat(playergo.X),parseFloat(playergo.Y),x,y, attackrange))
                 {
                      console.log(userGo.Role+" use "+item.Name+" to "+playergo.Role)
                     
@@ -1211,19 +1218,19 @@ GameRemote.prototype.useitem = function (msg, next) {
                             if(result.Type == "Timer")
                             {
                                 var now = new Date()
-                                targetgo.UnderItemStartTime = now.getTime()
-                                targetgo.UnderItemStopTime = targetgo.UnderItemStartTime + result.Timer*1000
+                                playergo.UnderItemStartTime = now.getTime()
+                                playergo.UnderItemStopTime = targetgo.UnderItemStartTime + result.Timer*1000
                             }
                             else if(result.Type == "Target")
                             {
                                 var targetx = parseFloat(msg.targetx)
                                 var targety = parseFloat(msg.targety)
-                                targetgo.TargetX = targetx
-                                targetgo.TargetY = targety
+                                playergo.TargetX = targetx
+                                playergo.TargetY = targety
                             }
                             else if(result.Type == "Once")
                             {
-                                targetgo.Once = true
+                                playergo.Once = true
                             }                            
                         }
                         
