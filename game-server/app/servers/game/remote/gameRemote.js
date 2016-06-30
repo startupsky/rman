@@ -969,6 +969,10 @@ GameRemote.prototype.report = function (msg, next) {
         var limit = 1.0/111000 // 1m
         player = players.get(userid)
         var channel = channels.get(player.GameID)
+        if(player.State == "Dead")
+        {
+            return;
+        }
         if(player.State === "freeze")
         {
             if(Math.abs(x-player.X) >= limit || Math.abs(y-player.Y) >= limit)
@@ -996,7 +1000,7 @@ GameRemote.prototype.report = function (msg, next) {
             player.X = x
             player.Y = y
 
-            channel.pushMessage('onPlayerUpdate', {userid:userid,x:msg.x,y:msg.y});
+            channel.pushMessage('onPlayerUpdate', {userid:"player_"+userid,x:msg.x,y:msg.y});
                     
             var gomap = maps.get(player.GameID)
             if(!!gomap)
@@ -1011,9 +1015,9 @@ GameRemote.prototype.report = function (msg, next) {
         }
     }
 
-    next(null, {
-        player: JSON.stringify(player)
-    });
+    // next(null, {
+    //     player: JSON.stringify(player)
+    // });
 };
 
 GameRemote.prototype.reportalluser = function (msg, next) {
@@ -1143,7 +1147,7 @@ GameRemote.prototype.useitem = function (msg, next) {
         {           
             
             userGo = gomap.get("player_"+userid)
-            console.log(userGo)
+            
             
             if(userGo.ItemGos.count<index+1)
             {
@@ -1162,10 +1166,12 @@ GameRemote.prototype.useitem = function (msg, next) {
                 var targetRoles = item.TargetRole.split(",");
                 var itemResults = item.Result;
                 
+                channel.pushMessage('onPlayerUpdate', {userid:userGo.GOID,state:"Attack"});
+                
             game.CurrentPlayers.forEach(function(playerid)
             {
                 var playergo = gomap.get("player_"+playerid);
-                if(playergo.UnderItem)  //if the player is under item effect, do nothing, let the poor guy go...
+                if(playergo.UnderItem || playergo.State == "Dead")  //if the player is under item effect, do nothing, let the poor guy go...
                 {
                     return;
                 }
@@ -1192,16 +1198,23 @@ GameRemote.prototype.useitem = function (msg, next) {
                      for(var resultindex = 0;resultindex<itemResults.length;resultindex++)
                         {
                             var result = itemResults[resultindex]
+                            console.log("***result: "+result)
                             
                             if(typeof(result.Power) != "undefined")
                             {
-                                playergo.HealthPoint = playergo.HealthPoint-result.Power;
+                                console.log("power: "+result.Power)
+                                console.log("health point :"+playergo.CloneRole.HealthPoint)
+                                playergo.CloneRole.HealthPoint = playergo.CloneRole.HealthPoint-result.Power;
                                 
-                                if(playergo.HealthPoint <=0)
+                                if(playergo.CloneRole.HealthPoint <=0)
                                 {
+                                    console.log("one of "+playergo.Role+" is been eliminate by"+userGo.Role)
+                                    playergo.State = "Dead"
+                                    
+                                    channel.pushMessage('onPlayerUpdate', {userid:playergo.GOID,state:"Dead"});
                                     var roleCount = game.Roles.get(playergo.Role)
                                     game.Roles.set(roleName, roleCount-1) 
-                                    console.log("one of "+playergo.Role+" is been eliminate by"+userGo.Role)
+                                    
                                     //这里需要添加分数系统逻辑
                                 }
                             }

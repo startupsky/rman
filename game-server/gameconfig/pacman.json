@@ -83,10 +83,11 @@
             "Number": 4,
             "Pattern": "Spread",
             "Type": "Item",
+            "UserState": "Attack",
             "Result": [
                 {
                     "Type": "Once",
-                    "AttackRange": 100
+                    "Power": "1"
                 }
             ],
             "AttackRange": 10,
