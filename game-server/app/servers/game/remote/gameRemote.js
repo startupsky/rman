@@ -1221,7 +1221,12 @@ GameRemote.prototype.useitem = function (msg, next) {
                             
                             if(typeof(result.MoveRange) != "undefined")
                             {
-                                playergo.CloneRole.MoveRange = result.MoveRange
+                                playergo.CloneRole.MoveRange = result.MoveRange;
+                                if(playergo.CloneRole.MoveRange == 0)
+                                {
+                                    playergo.State = "Freeze"
+                                    channel.pushMessage('onPlayerUpdate', {userid:playergo.GOID,state:"Freeze"});
+                                }
                             }
                             if(typeof(result.AttackRange) != "undefined")
                             {
