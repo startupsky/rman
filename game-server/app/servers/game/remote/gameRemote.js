@@ -273,7 +273,33 @@ function SetupMap(game, channelService){
     }
     var majorRole = roles[1]
     var minorRole = roles[0]
-    var ratio = Math.floor(majorRole.Percentage/minorRole.Percentage)
+    
+    var multipleValue = game.CurrentPlayers.length/(100/minorRole.Percentage);
+    var offSet = game.CurrentPlayers.length%(100/minorRole.Percentage);
+    
+    Math.floor(Math.random()*game.CurrentPlayers.length);
+    
+    
+    if(offSet>0 && game.CurrentPlayers.length>1)
+        multipleValue=mutipleValue+1;
+
+    var minorRoleNumber = multipleValue;
+    
+    var playerRoles = new Array();
+    for (var i = 0; i < game.CurrentPlayers.length; i++)
+    {
+        playerRoles[i] = majorRole;
+    }
+    
+    for (var i = 0; i < minorRoleNumber; i++)
+    {
+        var index = Math.floor(Math.random()*game.CurrentPlayers.length);
+        while(playerRoles[index] == minorRole)
+        {
+            index = Math.floor(Math.random()*game.CurrentPlayers.length);
+        }
+        playerRoles[index] = minorRole;
+    }
     
     for (var i = 0; i < game.CurrentPlayers.length; i++) 
     {
@@ -282,9 +308,7 @@ function SetupMap(game, channelService){
         {
             var player = players.get(userid)
             var playergoid = "player_" + userid
-            var role = majorRole
-            if (i % (ratio + 1) == 0)
-                role = minorRole
+            var role = playerRoles[i]
             
             var channel = channels.get(game.ID.toString())
             var member = channel.getMember(userid)
@@ -570,7 +594,7 @@ function UpdatePlayerUnderItem(gameid)
                     playergo.UnderItemStartTime = null
                     playergo.UnderItemStopTime = null
                     var channel = channels.get(gameid)
-                    channel.pushMessage('onPlayerOffItem', {user:playerid})
+                    channel.pushMessage('onPlayerUpdate', {userid:userGo.GOID,state:"Normal"});
                 }
             }
             else if(!!playergo.TargetX && !!playergo.TargetY)
@@ -1235,7 +1259,8 @@ GameRemote.prototype.useitem = function (msg, next) {
                             
                             if(result.Type == "Timer")
                             {
-                                var now = new Date()
+                                playergo.UnderItem = true;
+                                var now = new Date();
                                 playergo.UnderItemStartTime = now.getTime()
                                 playergo.UnderItemStopTime = targetgo.UnderItemStartTime + result.Timer*1000
                             }
