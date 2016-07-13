@@ -1161,12 +1161,14 @@ GameRemote.prototype.useitem = function (msg, next) {
 
     var targetList;
     
+    
     console.log(games)
 
     if(games.has(gameid))
     {
         var game = games.get(gameid)
         var gomap = maps.get(gameid)
+        var channel = channels.get(gameid)
         if(!!gomap)
         {           
             
@@ -1215,7 +1217,6 @@ GameRemote.prototype.useitem = function (msg, next) {
                 {
                      console.log(userGo.Role+" use "+item.Name+" to "+playergo.Role)
                     
-                     var channel = channels.get(gameid)
                      channel.pushMessage('onPlayerUnderItem', {user:parseInt(playergo.GOID.substr(6, playergo.GOID.length-6)),item:item})
                      
                      
