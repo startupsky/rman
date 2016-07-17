@@ -281,7 +281,7 @@ function SetupMap(game, channelService){
     
     
     if(offSet>0 && game.CurrentPlayers.length>1)
-        multipleValue=mutipleValue+1;
+        multipleValue=multipleValue+1;
 
     var minorRoleNumber = multipleValue;
     
@@ -499,12 +499,6 @@ function IsInRange(x1, y1, x2, y2, range)
     var stopX2 = x2 + range
     var startY2 = y2 - range
     var stopY2 = y2 + range     
-    console.log("startX: "+startX2)
-    console.log("startY: "+startY2)
-    console.log("stopX: "+stopX2)
-    console.log("stopY: "+stopY2)
-    
-    console.log("player position:"+x1+" "+y1)
     
     return x1 > startX2 && x1 < stopX2 && y1 > startY2 && y1 < stopY2
 }
@@ -1263,7 +1257,7 @@ GameRemote.prototype.useitem = function (msg, next) {
                                 playergo.UnderItem = true;
                                 var now = new Date();
                                 playergo.UnderItemStartTime = now.getTime()
-                                playergo.UnderItemStopTime = targetgo.UnderItemStartTime + result.Timer*1000
+                                playergo.UnderItemStopTime = playergo.UnderItemStartTime + result.Timer*1000
                             }
                             else if(result.Type == "Target")
                             {
