@@ -206,16 +206,15 @@ function Item(name, description, targetRole, itemProperty)
     this.ItemProperty = itemProperty
 }
 
-function Game(userid, gamename, maxplayer, city, x1, y1, x2, y2, gametype) {
+function Game(userid, gamename, maxplayer, city, radius, centerlati, centerlong, gametype) {
     currentgameid = currentgameid + 1;
     this.ID = currentgameid;
     this.GameName = gamename;
     this.Maxplayer = maxplayer;
     this.City = city;
-    this.X1 = x1;
-    this.Y1 = y1;
-    this.X2 = x2;
-    this.Y2 = y2;
+    this.Radius = radius;
+    this.CenterLati = centerlati;
+    this.CenterLong = centerlong;
     this.GameType = gametype;
     this.Host = userid
     this.CurrentPlayers = []
@@ -351,11 +350,9 @@ function SetupMap(game, channelService){
             var distance = 2
             if (!!role.Distance)
                 distance = role.Distance
-            var distanceX = distance/11000.0
-            var distanceY = distanceX
                 
-            var row = Math.round((game.Y2-game.Y1)/distanceY)
-            var column = Math.round((game.X2 - game.X1)/distanceX)
+            var row = Math.round((game.Radius*2/1.414)/distance)
+            var column = Math.round((game.Radius*2/1.414)/distance)
             
             console.log("Map grid for role: " + role.Name)
             console.log(" row:"+row)
@@ -406,9 +403,11 @@ function SetupMap(game, channelService){
         {
             var distanceX = 2/11000.0 // 2m for the item
             var distanceY = distanceX
+
+            var distanceMeter = 2
                 
-            var row = Math.round((game.Y2-game.Y1)/distanceY)
-            var column = Math.round((game.X2 - game.X1)/distanceX)
+            var row = Math.round((game.Radius*2/1.414)/distanceMeter)
+            var column = Math.round((game.Radius*2/1.414)/distanceMeter)
                         
             distribution = new Array()
             for(var i = 0;i<row;i++)
@@ -432,12 +431,19 @@ function SetupMap(game, channelService){
         } 
 
         var roleid = 0
+        var startPointLati = parseFloat(game.CenterLati)-(parseInt(game.Radius)/(1.414*111000))
+        var startPointLong = parseFloat(game.CenterLong) - (parseInt(game.Radius)/(1.414*111000))
+
+        
+
         for (var i = 0; i < row; i++){
             for (var j=0; j < column;j++){
                 if(distribution[i][j]==1)
                 {
-                    var pointX = game.X1 + 0.5*distanceX + i*distanceX
-                    var pointY = game.Y1 + 0.5*distanceY + j*distanceY
+                    var pointY = startPointLati + 0.5*distanceX + i*distanceX
+                    var pointX = startPointLong + 0.5*distanceY + j*distanceY
+
+                    console.log("distanceX: "+distanceX+" distanceY:"+distanceY)
                     
                     var rolegoid = role.Name + "_"+ roleid
                     roleid = roleid + 1
@@ -661,35 +667,24 @@ function UpdatePlayerUnderItem(gameid)
 
 GameRemote.prototype.create = function (msg, serverid, next) { 
     
-    var smallx = parseFloat(msg.x1)
-    var bigx = parseFloat(msg.x2)
-    if(smallx > bigx)
-    {
-        var tempx = smallx
-        smallx = bigx
-        bigx = tempx
-    }
-    var smally = parseFloat(msg.y1)
-    var bigy = parseFloat(msg.y2)
-    if(smally > bigy)
-    {
-        var tempy = smally
-        smally = bigy
-        bigy = tempy
-    }
+    var radius = parseInt(msg.radius)
+
+    var centerLati = parseFloat(msg.centerlati)
+    var centerLong = parseFloat(msg.centerlong)
+
     var success = true
     var message = ""
     var game
     var userid = msg.userid
-    if(players.has(userid))
+    // if(players.has(userid))
+    // {
+    //     success = false
+    //     message = ALREADY_IN_GAME
+    //     game = games.get(players.get(userid).GameID)
+    // }
+    // else
     {
-        success = false
-        message = ALREADY_IN_GAME
-        game = games.get(players.get(userid).GameID)
-    }
-    else
-    {
-        game = new Game(msg.userid,msg.gamename, msg.maxplayer, msg.city, smallx, smally, bigx, bigy, msg.gametype)
+        game = new Game(msg.userid,msg.gamename, msg.maxplayer, msg.city, radius, centerLati, centerLong, msg.gametype)
 
         // add channel
         var channel = this.channelService.getChannel(this.ID, true);
@@ -727,14 +722,7 @@ GameRemote.prototype.list = function (msg, next) {
         {
             for(var game of gamesincity)
             {
-                if(game.X1 <= x && game.X2>=x && game.Y1<=y&&game.Y2>=y)
-                {
-                    game.Distance = 0;
-                }
-                else
-                {
-                    game.Distance = Math.sqrt((Math.pow((game.X1 + game.X2)/2 - x,2) + Math.pow((game.Y1 + game.Y2)/2-y, 2)))
-                }
+                game.Distance = getFlatternDistance(x,y,game.CenterLati,game.centerLong)-game.Radius
             }
             gamesincity.sort(function(a, b){
                 return a.Distance - b.Distance
@@ -840,28 +828,6 @@ GameRemote.prototype.start = function (msg, next) {
         var game = games.get(gameid)
         if (userid === game.Host) {
             if (game.State === GAME_STATE_WAITING) {
-                var allplayersinsidemap = true
-                for(var i = 0; i<game.CurrentPlayers.length;i++)
-                {
-                    var playerid = game.CurrentPlayers[i]
-                    if(players.has(playerid))
-                    {
-                        var player = players.get(userid)
-                        if(player.X >= game.X1 && player.X <= game.X2 && player.Y >= game.Y1 && player.Y <= game.Y2)
-                        {
-                        }
-                        else
-                        {
-                            allplayersinsidemap = false
-                            break
-                        }
-                    }
-                }
-                
-                // TODO: set to true for testing purpose
-                allplayersinsidemap = true
-                if(allplayersinsidemap)
-                {
                     success = true
                     message = ""
                     game.State = GAME_STATE_STARTED
@@ -869,12 +835,7 @@ GameRemote.prototype.start = function (msg, next) {
                     game.StartTime = now.getTime();
                     SetupMap(game, this.channelService)
                     var channel = channels.get(gameid)
-                    channel.pushMessage('onStart', {user:userid});                    
-                }
-                else
-                {
-                    message = PLAYERS_OUT_OF_GAME
-                }
+                    channel.pushMessage('onStart', {user:userid});      
             }
             else {
                 message = GAME_NOT_READY
@@ -1186,7 +1147,7 @@ GameRemote.prototype.useitem = function (msg, next) {
                 var targetRoles = item.TargetRole.split(",");
                 var itemResults = item.Result;
                 
-                channel.pushMessage('onPlayerUpdate', {userid:userGo.GOID,state:"Attack"});
+                //channel.pushMessage('onPlayerUpdate', {userid:userGo.GOID,state:"Attack"});
                 
             game.CurrentPlayers.forEach(function(playerid)
             {
@@ -1531,3 +1492,36 @@ GameRemote.prototype.attackrange = function (msg, next) {
         player: JSON.stringify(player)
     });
 };
+
+
+function getFlatternDistance(lat1,lng1,lat2,lng2){ 
+
+    var EARTH_RADIUS = 6371.004
+
+var f = getRad((lat1 + lat2)/2); 
+var g = getRad((lat1 - lat2)/2); 
+var l = getRad((lng1 - lng2)/2); 
+
+var sg = Math.sin(g); 
+var sl = Math.sin(l); 
+var sf = Math.sin(f); 
+
+var s,c,w,r,d,h1,h2; 
+var a = EARTH_RADIUS; 
+var fl = 1/298.257; 
+
+sg = sg*sg; 
+sl = sl*sl; 
+sf = sf*sf; 
+
+s = sg*(1-sl) + (1-sf)*sl; 
+c = (1-sg)*(1-sl) + sf*sl; 
+
+w = Math.atan(Math.sqrt(s/c)); 
+r = Math.sqrt(s*c)/w; 
+d = 2*w*a; 
+h1 = (3*r -1)/2/c; 
+h2 = (3*r +1)/2/s; 
+
+return d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg)); 
+} 
