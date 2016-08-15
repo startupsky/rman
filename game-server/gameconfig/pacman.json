@@ -7,7 +7,7 @@
             "Description": "eat apples",
             "HealthPoint": 1,
             "AttackPoint": 1,
-            "AttackRange": 1,
+            "AttackRange": 2,
             "AttackRole": "apple",
             "AttackReward": 10,
             "AcquireRange": 1,

@@ -338,6 +338,8 @@ function SetupMap(game, channelService){
         }
     }
 
+    var distanceX = 5/11000.0 // 2m for the item
+    var distanceY = distanceX
     // Part 2: assign non-player roles
     // TODO: assume the AI roles start from index 2
     for(var index = 2; index < roles.length; index++)
@@ -401,10 +403,9 @@ function SetupMap(game, channelService){
         }  
         else if(role.Type === "Item")  // random distribute based on number
         {
-            var distanceX = 2/11000.0 // 2m for the item
-            var distanceY = distanceX
+            
 
-            var distanceMeter = 2
+            var distanceMeter = 5
                 
             var row = Math.round((game.Radius*2/1.414)/distanceMeter)
             var column = Math.round((game.Radius*2/1.414)/distanceMeter)
@@ -440,8 +441,8 @@ function SetupMap(game, channelService){
             for (var j=0; j < column;j++){
                 if(distribution[i][j]==1)
                 {
-                    var pointY = startPointLati + 0.5*distanceX + i*distanceX
-                    var pointX = startPointLong + 0.5*distanceY + j*distanceY
+                    var pointX = startPointLati + 0.5*distanceX + i*distanceX
+                    var pointY = startPointLong + 0.5*distanceY + j*distanceY
 
                     console.log("distanceX: "+distanceX+" distanceY:"+distanceY)
                     
@@ -478,7 +479,7 @@ function CanAttack(playergo, go)
         var attackRoles = playergo.CloneRole.AttackRole.split(",")
         if(attackRoles.indexOf(go.CloneRole.Name) > -1)
         {
-            var attackrange = playergo.CloneRole.AttackRange/111000.0
+            var attackrange = playergo.CloneRole.AttackRange
             return IsInRange(parseFloat(playergo.X), parseFloat(playergo.Y),parseFloat(go.X),parseFloat(go.Y), attackrange)
         }
     }
@@ -492,7 +493,7 @@ function CanAcquire(playergo, go)
         var acquireRoles = playergo.CloneRole.AcquireRole.split(",")
         if(acquireRoles.indexOf(go.CloneRole.Name) > -1)
         {
-            var acquirerange = playergo.CloneRole.AcquireRange/111000.0
+            var acquirerange = 2
             return IsInRange(parseFloat(playergo.X), parseFloat(playergo.Y),parseFloat(go.X),parseFloat(go.Y), acquirerange)
         }
     }
@@ -501,12 +502,9 @@ function CanAcquire(playergo, go)
 
 function IsInRange(x1, y1, x2, y2, range)
 {
-    var startX2 = x2 - range
-    var stopX2 = x2 + range
-    var startY2 = y2 - range
-    var stopY2 = y2 + range     
+    var distance = getFlatternDistance(x1,y1,x2,y2)    
     
-    return x1 > startX2 && x1 < stopX2 && y1 > startY2 && y1 < stopY2
+    return distance < range
 }
 
 function UpdateMap(gameid, userid, x, y)
@@ -599,7 +597,7 @@ function UpdatePlayerUnderItem(gameid)
             }
             else if(!!playergo.TargetX && !!playergo.TargetY)
             {
-                var limit = 1.0/111000 // 1m
+                var limit = 2 // 1m
                 if(IsInRange(playergo.X, playergo.Y, playergo.TargetX, playergo.TargetY, limit))
                 {
                     playergo.CloneRole = JSON.parse(JSON.stringify(playergo.OldRole))
@@ -1165,7 +1163,7 @@ GameRemote.prototype.useitem = function (msg, next) {
                 }
                 
                 console.log("find one player in the target list: "+playergo)
-                var attackrange = userGo.ItemGos[index].CloneRole.AttackRange/111000.0;
+                var attackrange = userGo.ItemGos[index].CloneRole.AttackRange;
    
                 
                 if(IsInRange(parseFloat(playergo.X),parseFloat(playergo.Y),x,y, attackrange))
@@ -1493,10 +1491,14 @@ GameRemote.prototype.attackrange = function (msg, next) {
     });
 };
 
+var EARTH_RADIUS = 6378137.0; //单位M 
+var PI = Math.PI; 
+
+function getRad(d){ 
+return d*PI/180.0; 
+} 
 
 function getFlatternDistance(lat1,lng1,lat2,lng2){ 
-
-    var EARTH_RADIUS = 6371.004
 
 var f = getRad((lat1 + lat2)/2); 
 var g = getRad((lat1 - lat2)/2); 
