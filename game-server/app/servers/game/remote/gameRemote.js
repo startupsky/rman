@@ -338,7 +338,7 @@ function SetupMap(game, channelService){
         }
     }
 
-    var distanceX = 5/11000.0 // 2m for the item
+    var distanceX = 2/11000.0 // 2m for the item
     var distanceY = distanceX
     // Part 2: assign non-player roles
     // TODO: assume the AI roles start from index 2
@@ -405,7 +405,7 @@ function SetupMap(game, channelService){
         {
             
 
-            var distanceMeter = 5
+            var distanceMeter = 2
                 
             var row = Math.round((game.Radius*2/1.414)/distanceMeter)
             var column = Math.round((game.Radius*2/1.414)/distanceMeter)
