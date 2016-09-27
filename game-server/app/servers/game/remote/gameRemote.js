@@ -620,6 +620,18 @@ function UpdatePlayerUnderItem(gameid)
     }
 }
 
+function OnGameFinished(gameid)
+{
+    var game = games.get(gameid)
+
+    for (var i = 0; i < game.CurrentPlayers.length; i++) {
+                if (game.CurrentPlayers[i].role === userid) {
+                    found = true
+                    break
+                }
+            }
+}
+
  function UpdateGameStopCondition(gameid)
 {
     var game = games.get(gameid)
@@ -635,7 +647,8 @@ function UpdatePlayerUnderItem(gameid)
             if(currentTime <= 0)
             {
                 game.Winer = condition.Winer
-                DeleteGame(gameid)
+               // generateGameResult
+                //DeleteGame(gameid)
                 return
             }
             
