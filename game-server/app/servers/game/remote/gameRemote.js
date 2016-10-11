@@ -246,6 +246,12 @@ function GameStopInfo(gameid, winer)
     this.Players = []
 }
 
+function GameResultInfo(userid, username, gain)
+{
+    this.UserId = userid
+    this.Gain = gain
+}
+
 function SetupMap(game, channelService){
     
     // get game config by game type
@@ -342,7 +348,8 @@ function SetupMap(game, channelService){
     var distanceY = distanceX
     // Part 2: assign non-player roles
     // TODO: assume the AI roles start from index 2
-    for(var index = 2; index < roles.length; index++)
+  //  for(var index = 2; index < roles.length; index++)
+  for(var index = 2; index < roles.length; index++)
     {
         var role = roles[index]
         var distribution;
@@ -435,7 +442,8 @@ function SetupMap(game, channelService){
         var startPointLati = parseFloat(game.CenterLati)-(parseInt(game.Radius)/(1.414*111000))
         var startPointLong = parseFloat(game.CenterLong) - (parseInt(game.Radius)/(1.414*111000))
 
-        
+        row=1;
+        colum = 1
 
         for (var i = 0; i < row; i++){
             for (var j=0; j < column;j++){
@@ -471,6 +479,9 @@ function SetupMap(game, channelService){
 
 function CanAttack(playergo, go)
 {
+    if(go.CloneRole.HealthPoint<=0)  //already dead, can not attack
+        return false;
+
     if(playergo.CloneRole.AttackPoint > 0 // player can attack
             && playergo.CloneRole.AttackRange > 0
             && go.CloneRole.HealthPoint > 0 // go is still alive
@@ -623,13 +634,24 @@ function UpdatePlayerUnderItem(gameid)
 function OnGameFinished(gameid)
 {
     var game = games.get(gameid)
+    var playerList = new Array()
 
+    var startIndex = 0
+    var endIndex = game.CurrentPlayers.length-1
     for (var i = 0; i < game.CurrentPlayers.length; i++) {
-                if (game.CurrentPlayers[i].role === userid) {
-                    found = true
-                    break
+                if (game.CurrentPlayers[i].role === game.Winer) {
+                    var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
+
+                    playerList[startIndex++] = playerInfo;
+                }
+                else
+                {
+                    var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
+                    playerList[endIndex--] = playerInfo;
                 }
             }
+    var gameResult = new GameStopInfo(gameid,game.Winer,playerList)
+
 }
 
  function UpdateGameStopCondition(gameid)
@@ -648,7 +670,7 @@ function OnGameFinished(gameid)
             {
                 game.Winer = condition.Winer
                // generateGameResult
-                //DeleteGame(gameid)
+                DeleteGame(gameid)
                 return
             }
             
@@ -661,9 +683,11 @@ function OnGameFinished(gameid)
         }
         else if(condition.Type === "RoleCondition")
         {
+            console.log("*******go in to role condition")
             var roleCount = game.Roles.get(condition.Role)
             if(roleCount == condition.Count)
             {
+                console.log("*******go in to role condition"+condition.Type+"="+roleCount)
                 game.Winer = condition.Winer
                 DeleteGame(gameid)
                 return
@@ -898,28 +922,50 @@ GameRemote.prototype.stop = function (msg, next) {
 // delete game. 1) delete users. 2) save scores. 3) delete game. 4) delete channel. 5) delete game map.
 function DeleteGame(gameid)
 { 
-    var gomap = maps.get(gameid)
+    // var gomap = maps.get(gameid)
+    // var game = games.get(gameid)
+    
+    // var gameStopInfo = new GameStopInfo(gameid, game.Winer)
+    
+    // for(var playerid of game.CurrentPlayers)
+    // {
+    //     players.delete(playerid)
+    //     var playergo = gomap.get("player_"+playerid)
+    //     if(!!playergo)
+    //     {
+    //         SaveUserInfo(playerid, playergo.Score) 
+    //         gameStopInfo.Players.push(playerid + ":" + playergo.Score)              
+    //     }
+    // }
+
+
     var game = games.get(gameid)
-    
-    var gameStopInfo = new GameStopInfo(gameid, game.Winer)
-    
-    for(var playerid of game.CurrentPlayers)
-    {
-        players.delete(playerid)
-        var playergo = gomap.get("player_"+playerid)
-        if(!!playergo)
-        {
-            SaveUserInfo(playerid, playergo.Score) 
-            gameStopInfo.Players.push(playerid + ":" + playergo.Score)              
-        }
-    }
+    var playerList = new Array()
+
+    var startIndex = 0
+    var endIndex = game.CurrentPlayers.length-1
+    for (var i = 0; i < game.CurrentPlayers.length; i++) {
+                if (game.CurrentPlayers[i].role === game.Winer) {
+                    var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
+
+                    playerList[startIndex++] = playerInfo;
+                }
+                else
+                {
+                    var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
+                    playerList[endIndex--] = playerInfo;
+                }
+            }
+
+
+
     
     var channel = channels.get(gameid)
-    channel.pushMessage('onStop', gameStopInfo);
+    channel.pushMessage('onStop', playerList);
     
-    games.delete(gameid)     
-    channels.delete(gameid)
-    maps.delete(gameid)
+    // games.delete(gameid)     
+    // channels.delete(gameid)
+    // maps.delete(gameid)
 }
 
 GameRemote.prototype.querymap = function (msg, next) {
