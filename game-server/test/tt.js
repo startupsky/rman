@@ -1,48 +1,42 @@
+gr = require('../app/servers/game/remote/gameModule.js')
+var assert = require("assert")
 
+describe("Game Module",function(){
+  describe("Create New", function(){
+     it("successful",function(){
+         var gameMgr = new gr.gameManager.createNew()
+    });
+   });
+});
 
+describe("Game Create",function(){
+  describe("current game id udpate", function(){
+     it("init as 0 and first game should be 1 and be update",function(){
+         var game = new gr.Game.createNew(123,"testGame", "3", "beijing", 100, 1, 1, 0)
+         assert.equal(1,game.ID,"game id is not 1")
+         assert.equal("testGame",game.GameName,"game id is not 1")
+         console.log(JSON.stringify(game))
 
-var EARTH_RADIUS = 6378137.0; //单位M 
-var PI = Math.PI; 
+         var game2 = new gr.Game.createNew(123,"testGame", "3", "beijing", 100, 1, 1, 0)
+         assert.equal(2,game2.ID,"game id is not 2")
+    });
+   });
+});
 
-function getRad(d){ 
-return d*PI/180.0; 
-} 
+describe("Game Create",function(){
+  describe("host information should be saved", function(){
+     it("added game creater as host & save to curentplayer",function(){
+         var gameMgr = new gr.Game.createNew()
+             
+    });
+   });
+});
 
-
-//var distance = getFlatternDistance(39.9072014648,116.1902475357,39.9049628889,116.4272689819)
-var distance = getFlatternDistance(39.9072014648,116.1902475357,39.90724650984505,116.1902475357)
-console.log(distance)
-
-
-
-
-
-function getFlatternDistance(lat1,lng1,lat2,lng2){ 
-
-var f = getRad((lat1 + lat2)/2); 
-var g = getRad((lat1 - lat2)/2); 
-var l = getRad((lng1 - lng2)/2); 
-
-var sg = Math.sin(g); 
-var sl = Math.sin(l); 
-var sf = Math.sin(f); 
-
-var s,c,w,r,d,h1,h2; 
-var a = EARTH_RADIUS; 
-var fl = 1/298.257; 
-
-sg = sg*sg; 
-sl = sl*sl; 
-sf = sf*sf; 
-
-s = sg*(1-sl) + (1-sf)*sl; 
-c = (1-sg)*(1-sl) + sf*sl; 
-
-w = Math.atan(Math.sqrt(s/c)); 
-r = Math.sqrt(s*c)/w; 
-d = 2*w*a; 
-h1 = (3*r -1)/2/c; 
-h2 = (3*r +1)/2/s; 
-
-return d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg)); 
-} 
+describe("Game Configure Reader",function(){
+  describe("should read the configure files and return the configure map", function(){
+     it("output the configure map",function(){
+         var gameConfigures = gr.ConfigureReader()
+         console.log(gameConfigures)    
+    });
+   });
+});
