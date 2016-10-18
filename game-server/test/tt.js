@@ -51,3 +51,14 @@ describe("Game SetupMap",function(){
     });
    });
 });
+
+describe("Game SetupMap",function(){
+  describe("get role Count", function(){
+     it("2 roles, should assign as 1-1",function(){
+         var game = new gr.Game.createNew(123,"testGame", "3", "beijing", 100, 1, 1, "Angel&deamon")
+         game.CurrentPlayers=["1","2","3"]
+         game.SetupMap()
+      //   assert.equal(1,game.GetRoleCount(["pacman","ghost"],2,0.2),"get role count has problem")
+    });
+   });
+});
