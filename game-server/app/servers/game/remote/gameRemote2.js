@@ -139,6 +139,7 @@ var games = new Map()
 var maps = new Map()
 var players = new Map()
 var channels = new Map()
+var gameManager = gr.GameManager.createNew()
 
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017/rman';
@@ -694,17 +695,12 @@ GameRemote.prototype.create = function (msg, serverid, next) {
     // }
     // else
     {
-        game = gr.Game.createNew(msg.userid,msg.gamename, msg.maxplayer, msg.city, radius, centerLati, centerLong, msg.gametype)
+        game = gameManager.Create(msg.userid,msg.gamename, msg.maxplayer, msg.city, radius, centerLati, centerLong, msg.gametype)
 
         // add channel
         var channel = this.channelService.getChannel(this.ID, true);
         channel.add(userid, serverid)
-        channels.set(game.ID.toString(), channel)
-    
-        var player = gr.Player.createNew(userid, parseFloat(msg.playerx), parseFloat(msg.playery), game.ID)
-        players.set(userid,player)
-
-        games.set(game.ID.toString(), game)
+        channels.set(game.ID.toString(), channel)  
     }
 
     next(null, {
@@ -715,36 +711,11 @@ GameRemote.prototype.create = function (msg, serverid, next) {
 };
 
 GameRemote.prototype.list = function (msg, next) {
-    var city = msg.city;  
-    var gamesincity = [];
-    for (var game of games.values()) {
-        if (city == "-1" || city == game.City) {
-            gamesincity.push(game)
-        }
-    }
+    var gamesincity = gameManager.List(msg)
     
-
-    if(!!msg.X && !!msg.Y)
-    {
-        var x = parseFloat(msg.X);
-        var y = parseFloat(msg.Y);
-        if(!isNaN(x) && !isNaN(y))
-        {
-            for(var game of gamesincity)
-            {
-                game.Distance = getFlatternDistance(x,y,game.CenterLati,game.centerLong)-game.Radius
-            }
-            gamesincity.sort(function(a, b){
-                return a.Distance - b.Distance
-            })
-        }
-    }
     next(null, {
         games: JSON.stringify(gamesincity)
-    });
-    for (var game of games.values()) {
-        game.Distance = NaN
-    }    
+    });  
 };
 
 GameRemote.prototype.join = function (msg, serverid, next) {
