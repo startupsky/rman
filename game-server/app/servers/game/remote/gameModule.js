@@ -15,60 +15,118 @@ var GAME_STATE_WAITING = 0;
 var GAME_STATE_STARTED = 1;
 var GAME_STATE_STOPPED = 2;
 
+function GameObject(id, x, y, role, displayname, state)
+{
+    this.GOID = id
+    this.X = x
+    this.Y = y
+    this.Role = role.Name
+    this.CloneRole = role
+    this.DisplayName = displayname
+    this.State = state
+    this.Score = 0
+    this.Items = []
+    this.ItemGos = []
+    this.UnderItem = false
+}
+
+function CanAttack(playergo, go)
+{
+    if(go.CloneRole.HealthPoint<=0)  //already dead, can not attack
+        return false;
+
+    if(playergo.CloneRole.AttackPoint > 0 // player can attack
+            && playergo.CloneRole.AttackRange > 0
+            && go.CloneRole.HealthPoint > 0 // go is still alive
+    )
+    {
+        var attackRoles = playergo.CloneRole.AttackRole.split(",")
+        if(attackRoles.indexOf(go.CloneRole.Name) > -1)
+        {
+            var attackrange = playergo.CloneRole.AttackRange
+            return IsInRange(parseFloat(playergo.X), parseFloat(playergo.Y),parseFloat(go.X),parseFloat(go.Y), attackrange)
+        }
+    }
+    return false
+}
+
+function CanAcquire(playergo, go)
+{
+    if(playergo.Items.length < playergo.CloneRole.AcquireLimit && playergo.CloneRole.AcquireRange > 0 && go.CloneRole.HealthPoint > 0)
+    {
+        var acquireRoles = playergo.CloneRole.AcquireRole.split(",")
+        if(acquireRoles.indexOf(go.CloneRole.Name) > -1)
+        {
+            var acquirerange = 2
+            return IsInRange(parseFloat(playergo.X), parseFloat(playergo.Y),parseFloat(go.X),parseFloat(go.Y), acquirerange)
+        }
+    }
+    return false
+}
+
+function IsInRange(x1, y1, x2, y2, range)
+{
+    var distance = getFlatternDistance(x1,y1,x2,y2)    
+    
+    return distance < range
+}
+
 function ConfigureReader()
 {
     var gameConfigs = new Map()
 
-var fs = require('fs')
-var dir = "gameconfig"
-var files = fs.readdirSync(dir);
-console.log(files.length)
-for(var index=0;index<files.length;index++)
-{
-    var str = fs.readFileSync(dir + "/" + files[index], "utf8")
-    var config = JSON.parse(str)
-    console.log(config.Name)
-    gameConfigs.set(config.Name, config)
-}
-    console.log(gameConfigs)
-    return gameConfigs
+    var fs = require('fs')
+    var dir = "gameconfig"
+    var files = fs.readdirSync(dir);
+    console.log(files.length)
+    for(var index=0;index<files.length;index++)
+    {
+        var str = fs.readFileSync(dir + "/" + files[index], "utf8")
+        var config = JSON.parse(str)
+        console.log(config.Name)
+        gameConfigs.set(config.Name, config)
+    }
+        console.log(gameConfigs)
+        return gameConfigs
 }
 
 var EARTH_RADIUS = 6378137.0; //单位M 
 var PI = Math.PI; 
 
-function getRad(d){ 
-return d*PI/180.0; 
+function getRad(d)
+{ 
+    return d*PI/180.0; 
 };
 
-function getFlatternDistance(lat1,lng1,lat2,lng2){ 
+function getFlatternDistance(lat1,lng1,lat2,lng2)
+{ 
 
-var f = getRad((lat1 + lat2)/2); 
-var g = getRad((lat1 - lat2)/2); 
-var l = getRad((lng1 - lng2)/2); 
+    var f = getRad((lat1 + lat2)/2); 
+    var g = getRad((lat1 - lat2)/2); 
+    var l = getRad((lng1 - lng2)/2); 
 
-var sg = Math.sin(g); 
-var sl = Math.sin(l); 
-var sf = Math.sin(f); 
+    var sg = Math.sin(g); 
+    var sl = Math.sin(l); 
+    var sf = Math.sin(f); 
 
-var s,c,w,r,d,h1,h2; 
-var a = EARTH_RADIUS; 
-var fl = 1/298.257; 
+    var s,c,w,r,d,h1,h2; 
+    var a = EARTH_RADIUS; 
+    var fl = 1/298.257; 
 
-sg = sg*sg; 
-sl = sl*sl; 
-sf = sf*sf; 
+    sg = sg*sg; 
+    sl = sl*sl; 
+    sf = sf*sf; 
 
-s = sg*(1-sl) + (1-sf)*sl; 
-c = (1-sg)*(1-sl) + sf*sl; 
+    s = sg*(1-sl) + (1-sf)*sl; 
+    c = (1-sg)*(1-sl) + sf*sl; 
 
-w = Math.atan(Math.sqrt(s/c)); 
-r = Math.sqrt(s*c)/w; 
-d = 2*w*a; 
-h1 = (3*r -1)/2/c; 
-h2 = (3*r +1)/2/s; 
+    w = Math.atan(Math.sqrt(s/c)); 
+    r = Math.sqrt(s*c)/w; 
+    d = 2*w*a; 
+    h1 = (3*r -1)/2/c; 
+    h2 = (3*r +1)/2/s; 
 
-return d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg)); 
+    return d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg)); 
 } 
 
 var Ayo_GameManager=
@@ -150,6 +208,7 @@ var Ayo_Game=
         game.Distance = NaN
         game.Roles = new Map()
         game.Players = new Map()
+        game.GOmap = new Map()
 
         var player = new Ayo_Player.createNew(userid, centerlati, centerlong, game.ID)
         game.Players.set(userid,player)
@@ -205,7 +264,7 @@ var Ayo_Game=
             return playerRoles
         }
 
-        game.SetupMap = function()
+        game.SetupMap = function(params, receiverList)
         {
             // get game config by game type
             var gameConfig = (ConfigureReader()).get(game.GameType)
@@ -223,20 +282,19 @@ var Ayo_Game=
 
             var playerRoles = game.GetPlayerRoles(roles, game.CurrentPlayers.length, minorRole.Percentage)
 
-            var params = new Array()
-            var receiverList = new Array()
-
             for (var i = 0; i < game.CurrentPlayers.length; i++) 
             {
                 var userid = game.CurrentPlayers[i]
                 
-                var player = game.Players.get(userid)
+                var player = players.get(userid)
                 var playergoid = "player_" + userid
                 var role = playerRoles[i]
                 
-                receiverList[i]=userid
+                receiverList[i]=userid  //发送给本人
                 
                 player.Role = role.Name
+                var param = {role: role.Name, instruction: role.Description}
+                params[i] = param
                 var cloneRole = JSON.parse(JSON.stringify(role))
                 var playergo = new GameObject(playergoid, player.X, player.Y, cloneRole, userid, "normal")
                 gomap.set(playergoid, playergo)
@@ -258,7 +316,7 @@ var Ayo_Game=
             // Part 2: assign non-player roles
             // TODO: assume the AI roles start from index 2
         //  for(var index = 2; index < roles.length; index++)
-        for(var index = 2; index < roles.length; index++)
+            for(var index = 2; index < roles.length; index++)
             {
                 var role = roles[index]
                 var distribution;
@@ -383,7 +441,8 @@ var Ayo_Game=
                 } 
             }
 
-            maps.set(game.ID.toString(), gomap)
+            game.GOmap =gomap
+            console.log(game.GOmap)
         }
         return game;
     }
@@ -415,9 +474,13 @@ function Ayo_Item(name, description, targetRole, itemProperty)
     this.ItemProperty = itemProperty
 }
 
+
+
 exports.GameManager = Ayo_GameManager
 exports.Game = Ayo_Game
 exports.Player = Ayo_Player
 exports.Item = Ayo_Item
 exports.getFlatternDistance = getFlatternDistance
 exports.ConfigureReader = ConfigureReader
+exports.CanAcquire = CanAcquire
+exports.CanAttack = CanAttack

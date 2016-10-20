@@ -66,8 +66,10 @@ describe("Game SetupMap",function(){
      it("2 roles, should assign as 1-1",function(){
         var gameMgr = new gr.GameManager.createNew()
          var game = gameMgr.Create("123","testGame", 3, "beijing", 100, 1, 1, "Angel&deamon")
-         game.CurrentPlayers=["1","2","3"]
-         game.SetupMap()
+         
+         var params = new Array()
+         var receiverList = new Array()
+         game.SetupMap(params, receiverList)
       //   assert.equal(1,game.GetRoleCount(["pacman","ghost"],2,0.2),"get role count has problem")
     });
    });
