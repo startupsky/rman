@@ -74,3 +74,73 @@ describe("Game SetupMap",function(){
     });
    });
 });
+
+describe("test can attack",function(){
+  describe("give 2 gameobject, return true or false", function(){
+    
+    var cloneRole = 
+                        { Name: 'pacman',
+                          Description: 'pacman',
+                          HealthPoint: 1,
+                          AttackPoint: 5,
+                          AttackRange: 0,
+                          AttackReward: 1,
+                          Distance: 2,
+                          Pattern: 'Spread',
+                          Type: 'AI' }
+    var go = new gr.GameObject(1, 10, 10, "pacman", "pacman", 0)
+     go.CloneRole = cloneRole
+    var cloneRole2 = 
+                        { Name: 'apple',
+                          Description: 'apple',
+                          HealthPoint: 1,
+                          AttackPoint: 0,
+                          AttackRange: 0,
+                          AttackReward: 1,
+                          Distance: 2,
+                          Pattern: 'Spread',
+                          Type: 'AI' }
+      var go2 = new gr.GameObject(1, 10, 10, "apple", "apple", 0)
+     go2.CloneRole = cloneRole2
+
+     it("should return false if has 0 health point",function(){
+       go.CloneRole.AttachPoint = 5
+       go2.CloneRole.HealthPoint = 0
+       assert.equal(false,gr.CanAttack(go,go2),"")
+    });
+
+    it("should return false if not in the attack list",function(){
+       go.CloneRole.AttachPoint = 5
+       go2.CloneRole.HealthPoint = 1
+       assert.equal(false,gr.CanAttack(go,go2),"")
+    });
+
+    it("should return true if in the attack list",function(){
+       go.CloneRole.AttackPoint = 5
+       go.CloneRole.AttackRange = 5
+       go.CloneRole.AttackRole = "apple"
+       go2.CloneRole.HealthPoint = 1
+       go2.Role = "apple"
+       console.log(go)
+       console.log(go2)
+       assert.equal(true,gr.CanAttack(go,go2),"")
+    });
+   });
+});
+
+describe("Game Update Map",function(){
+  describe("handle user position report and do the right update", function(){
+     it("update Map general",function(){
+        var gameMgr = new gr.GameManager.createNew()
+         var game = gameMgr.Create("123","testGame", 3, "beijing", 100, 1, 1, "Angel&deamon")
+         
+         var params = new Array()
+         var receiverList = new Array()
+         game.SetupMap(params, receiverList)
+         var pushMessageMap= new Map()
+         game.UpdateMap("123", 10, 10, pushMessageMap)
+         console.log(pushMessageMap)
+      //   assert.equal(1,game.GetRoleCount(["pacman","ghost"],2,0.2),"get role count has problem")
+    });
+   });
+});

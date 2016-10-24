@@ -256,7 +256,7 @@ function SetupMap(game, channelService)
     var params = new Array()
     var receiverList = new Array()
     
-    game.SetupMap(params, receiverList)
+    var gomap = game.SetupMap(params, receiverList)
 
     maps.set(game.ID.toString(), gomap)
 
@@ -324,184 +324,18 @@ function IsInRange(x1, y1, x2, y2, range)
 
 function UpdateMap(gameid, userid, x, y)
 {
-    var gomap = maps.get(gameid)
-    var game = games.get(gameid)
-    var playergo = gomap.get("player_"+userid)
-    var channel = channels.get(gameid)
+    var pushMessageMap = new map()
+
+    gameManager.game[gameid].UpdateMap(userid, x, y, pushMessageMap)
     
-    var canmove = true
-    if(!!playergo.CloneRole.MoveRange)
-    {
-        var limit = playergo.CloneRole.MoveRange/111000 // 1m
-        if(Math.abs(x-playergo.X) >= limit || Math.abs(y-playergo.Y) >= limit)
-        {
-            channel.pushMessage('onOutScope', {userid:userid,x:playergo.X,y:playergo.Y});
-            canmove = false
-        }
-    }
-    if(canmove)
-    {
-        playergo.X = x
-        playergo.Y = y    
-        gomap.forEach(function loop(go, goid, map) {
-            if (CanAttack(playergo, go))
-            {     
-                go.CloneRole.HealthPoint = go.CloneRole.HealthPoint - playergo.CloneRole.AttackPoint
-                
-                if(go.CloneRole.HealthPoint <= 0)
-                {
-                    var roleName = go.CloneRole.Name
-                    var roleCount = game.Roles.get(roleName)
-                    game.Roles.set(roleName, roleCount-1)            
-                }
 
-                console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
-
-                playergo.Score = playergo.Score + go.CloneRole.AttackReward
-
-                channel.pushMessage('onMapUpdate', {goid: goid, go: go});
-                channel.pushMessage('onPlayerScore', {userid: userid, score: playergo.Score}); 
-            }
-            else if(CanAcquire(playergo, go))
-            {
-                go.CloneRole.HealthPoint = 0
-
-                var roleName = go.CloneRole.Name
-                var roleCount = game.Roles.get(roleName)
-                game.Roles.set(roleName, roleCount-1)     
-                
-                console.log(go)
-                console.log("*****"+go.CloneRole)               
-
-                console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " acquire [" + go.CloneRole.Name + "](" + go.GOID +")")
-
-                playergo.Items.push(go.CloneRole.Name)
-                playergo.ItemGos.push(go)
-
-                channel.pushMessage('onMapUpdate', {goid: goid, go: go});
-                channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items});                   
-            }
-        })              
-    }
-
-    UpdatePlayerUnderItem(gameid)
-    UpdateGameStopCondition(gameid)
-}
-
-function UpdatePlayerUnderItem(gameid)
-{
-    var game = games.get(gameid)
-    var gomap = maps.get(gameid)
-    for(var playerid of game.CurrentPlayers)
-    {
-        var playergo = gomap.get("player_"+playerid)
-        if(!!playergo && !!playergo.UnderItem)
-        {
-            if(!!playergo.UnderItemStopTime)
-            {
-                var now = new Date()
-                if(now.getTime() > playergo.UnderItemStopTime)
-                {
-                    playergo.CloneRole = JSON.parse(JSON.stringify(playergo.OldRole))
-                    playergo.UnderItem = false
-                    playergo.UnderItemStartTime = null
-                    playergo.UnderItemStopTime = null
-                    var channel = channels.get(gameid)
-                    channel.pushMessage('onPlayerUpdate', {userid:userGo.GOID,state:"Normal"});
-                }
-            }
-            else if(!!playergo.TargetX && !!playergo.TargetY)
-            {
-                var limit = 2 // 1m
-                if(IsInRange(playergo.X, playergo.Y, playergo.TargetX, playergo.TargetY, limit))
-                {
-                    playergo.CloneRole = JSON.parse(JSON.stringify(playergo.OldRole))
-                    playergo.UnderItem = false
-                    playergo.TargetX = null
-                    playergo.TargetY = null 
-                    var channel = channels.get(gameid)
-                    channel.pushMessage('onPlayerOffItem', {user:playerid})                    
-                }
-            }
-            else if(!!playergo.Once)
-            {
-                playergo.CloneRole = JSON.parse(JSON.stringify(playergo.OldRole))
-                playergo.UnderItem = false
-                playergo.Once = false
-                var channel = channels.get(gameid)
-                channel.pushMessage('onPlayerOffItem', {user:playerid})                   
-            }
-        }
-    }
-}
-
-function OnGameFinished(gameid)
-{
-    var game = games.get(gameid)
-    var playerList = new Array()
-
-    var startIndex = 0
-    var endIndex = game.CurrentPlayers.length-1
-    for (var i = 0; i < game.CurrentPlayers.length; i++) {
-                if (game.CurrentPlayers[i].role === game.Winer) {
-                    var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
-
-                    playerList[startIndex++] = playerInfo;
-                }
-                else
-                {
-                    var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
-                    playerList[endIndex--] = playerInfo;
-                }
-            }
-    var gameResult = new GameStopInfo(gameid,game.Winer,playerList)
-
-}
-
- function UpdateGameStopCondition(gameid)
-{
-    var game = games.get(gameid)
-    var stopCondition = gameConfigs.get(game.GameType).StopCondition
-    var stateInfo = []
-    for(var i = 0; i < stopCondition.length; i++)
-    {
-        var condition = stopCondition[i]
-        if(condition.Type === "Timer")
-        {
-            var now = new Date()
-            var currentTime = condition.Count * 1000 + game.StartTime - now.getTime();
-            if(currentTime <= 0)
-            {
-                game.Winer = condition.Winer
-               // generateGameResult
-                DeleteGame(gameid)
-                return
-            }
-            
-            var hour = parseInt(currentTime/(1000*60*60))
-            var min = parseInt(currentTime/(1000*60))
-            var sec = parseInt(currentTime%(1000*60)).toString().substr(0, 2)
-            var timer= hour+":"+min+":"+sec
-            
-            stateInfo.push({role:condition.Role,value:timer})
-        }
-        else if(condition.Type === "RoleCondition")
-        {
-            console.log("*******go in to role condition")
-            var roleCount = game.Roles.get(condition.Role)
-            if(roleCount == condition.Count)
-            {
-                console.log("*******go in to role condition"+condition.Type+"="+roleCount)
-                game.Winer = condition.Winer
-                DeleteGame(gameid)
-                return
-            }
-            stateInfo.push({role:condition.Role,value:roleCount})
-        }
-    }
-    
     var channel = channels.get(gameid)
-    channel.pushMessage('onStateUpdate', {state:stateInfo});
+    for(var key in pushMessageMap)
+    {
+        channel.pushMessage(key, pushMessageMap[key]);
+    }
+
+
 }
 
 GameRemote.prototype.create = function (msg, serverid, next) { 
@@ -711,6 +545,7 @@ function DeleteGame(gameid)
     //         gameStopInfo.Players.push(playerid + ":" + playergo.Score)              
     //     }
     // }
+
 
 
     var game = games.get(gameid)

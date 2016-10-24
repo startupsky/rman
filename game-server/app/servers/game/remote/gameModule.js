@@ -41,6 +41,7 @@ function CanAttack(playergo, go)
     )
     {
         var attackRoles = playergo.CloneRole.AttackRole.split(",")
+
         if(attackRoles.indexOf(go.CloneRole.Name) > -1)
         {
             var attackrange = playergo.CloneRole.AttackRange
@@ -67,7 +68,6 @@ function CanAcquire(playergo, go)
 function IsInRange(x1, y1, x2, y2, range)
 {
     var distance = getFlatternDistance(x1,y1,x2,y2)    
-    
     return distance < range
 }
 
@@ -100,7 +100,9 @@ function getRad(d)
 
 function getFlatternDistance(lat1,lng1,lat2,lng2)
 { 
-
+    if(lat1 == lat2 && lng1 == lng2)
+        return 0
+        
     var f = getRad((lat1 + lat2)/2); 
     var g = getRad((lat1 - lat2)/2); 
     var l = getRad((lng1 - lng2)/2); 
@@ -112,6 +114,8 @@ function getFlatternDistance(lat1,lng1,lat2,lng2)
     var s,c,w,r,d,h1,h2; 
     var a = EARTH_RADIUS; 
     var fl = 1/298.257; 
+
+    
 
     sg = sg*sg; 
     sl = sl*sl; 
@@ -126,6 +130,7 @@ function getFlatternDistance(lat1,lng1,lat2,lng2)
     h1 = (3*r -1)/2/c; 
     h2 = (3*r +1)/2/s; 
 
+ //   console.log(f+" "+g+" "+l+" "+sg+" "+sl+" "+sf+" "+s+" "+c+" "+w+" "+h1+" "+h2+" "+fl+" "+d)
     return d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg)); 
 } 
 
@@ -286,7 +291,7 @@ var Ayo_Game=
             {
                 var userid = game.CurrentPlayers[i]
                 
-                var player = players.get(userid)
+                var player = game.Players.get(userid)
                 var playergoid = "player_" + userid
                 var role = playerRoles[i]
                 
@@ -442,8 +447,205 @@ var Ayo_Game=
             }
 
             game.GOmap =gomap
-            console.log(game.GOmap)
+            return gomap
         }
+
+        game.UpdatePlayerUnderItem =function(pushMessageMap)
+        {
+            var gomap = game.GOmap
+            for(var playerid of game.CurrentPlayers)
+            {
+                var playergo = gomap.get("player_"+playerid)
+                if(!!playergo && !!playergo.UnderItem)
+                {
+                    if(!!playergo.UnderItemStopTime)
+                    {
+                        var now = new Date()
+                        if(now.getTime() > playergo.UnderItemStopTime)
+                        {
+                            playergo.CloneRole = JSON.parse(JSON.stringify(playergo.OldRole))
+                            playergo.UnderItem = false
+                            playergo.UnderItemStartTime = null
+                            playergo.UnderItemStopTime = null
+                            
+                            pushMessageMap.set('onPlayerUpdate', {userid:userGo.GOID,state:"Normal"});
+                        }
+                    }
+                    else if(!!playergo.TargetX && !!playergo.TargetY)
+                    {
+                        var limit = 2 // 1m
+                        if(IsInRange(playergo.X, playergo.Y, playergo.TargetX, playergo.TargetY, limit))
+                        {
+                            playergo.CloneRole = JSON.parse(JSON.stringify(playergo.OldRole))
+                            playergo.UnderItem = false
+                            playergo.TargetX = null
+                            playergo.TargetY = null 
+                            
+                            pushMessageMap.set('onPlayerOffItem', {user:playerid})                    
+                        }
+                    }
+                    else if(!!playergo.Once)
+                    {
+                        playergo.CloneRole = JSON.parse(JSON.stringify(playergo.OldRole))
+                        playergo.UnderItem = false
+                        playergo.Once = false
+                        
+                        pushMessageMap.set('onPlayerOffItem', {user:playerid})                   
+                    }
+                }
+            }
+        }
+
+        game.UpdateGameResult = function(pushMessageMap)
+        { 
+            var playerList = new Array()
+
+            var startIndex = 0
+            var endIndex = game.CurrentPlayers.length-1
+            for (var i = 0; i < game.CurrentPlayers.length; i++) {
+                        if (game.CurrentPlayers[i].role === game.Winer) {
+                            var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
+
+                            playerList[startIndex++] = playerInfo;
+                        }
+                        else
+                        {
+                            var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
+                            playerList[endIndex--] = playerInfo;
+                        }
+                    }
+            pushMessageMap.set('onStop', playerList);
+        }
+
+        function OnGameFinished(gameid)
+        {
+            
+            var playerList = new Array()
+
+            var startIndex = 0
+            var endIndex = game.CurrentPlayers.length-1
+            for (var i = 0; i < game.CurrentPlayers.length; i++) {
+                        if (game.CurrentPlayers[i].role === game.Winer) {
+                            var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
+
+                            playerList[startIndex++] = playerInfo;
+                        }
+                        else
+                        {
+                            var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
+                            playerList[endIndex--] = playerInfo;
+                        }
+                    }
+            var gameResult = new GameStopInfo(gameid,game.Winer,playerList)
+
+        }
+
+        game.UpdateGameStopCondition = function (pushMessageMap)
+        {
+            var stopCondition = (ConfigureReader()).get(game.GameType).StopCondition
+            var stateInfo = []
+            for(var i = 0; i < stopCondition.length; i++)
+            {
+                var condition = stopCondition[i]
+                if(condition.Type === "Timer")
+                {
+                    var now = new Date()
+                    var currentTime = condition.Count * 1000 + game.StartTime - now.getTime();
+                    if(currentTime <= 0)
+                    {
+                        game.Winer = condition.Winer
+                    // generateGameResult
+                        game.UpdateGameResult(pushMessageMap)
+                        return
+                    }
+                    
+                    var hour = parseInt(currentTime/(1000*60*60))
+                    var min = parseInt(currentTime/(1000*60))
+                    var sec = parseInt(currentTime%(1000*60)).toString().substr(0, 2)
+                    var timer= hour+":"+min+":"+sec
+                    
+                    stateInfo.push({role:condition.Role,value:timer})
+                }
+                else if(condition.Type === "RoleCondition")
+                {
+                    var roleCount = game.Roles.get(condition.Role)
+                    if(roleCount == condition.Count)
+                    {
+                        game.Winer = condition.Winer
+                        game.UpdateGameResult(pushMessageMap)
+                        return
+                    }
+                    stateInfo.push({role:condition.Role,value:roleCount})
+                }
+            }
+            
+            pushMessageMap.set('onStateUpdate', {state:stateInfo});
+        }
+
+        game.UpdateMap= function(userid, x, y, pushMessageMap)
+        {
+            var playergo = game.GOmap.get("player_"+userid)
+            var gomap = game.GOmap
+
+            var canmove = true
+            if(!!playergo.CloneRole.MoveRange)
+            {
+                var limit = playergo.CloneRole.MoveRange/111000 // 1m
+                if(Math.abs(x-playergo.X) >= limit || Math.abs(y-playergo.Y) >= limit)
+                {
+                    pushMessageMap.set('onOutScope', {userid:userid,x:playergo.X,y:playergo.Y})           
+                    canmove = false
+                }
+            }
+            if(canmove)
+            {
+                playergo.X = x
+                playergo.Y = y    
+                gomap.forEach(function loop(go, goid, map) {
+                    if (CanAttack(playergo, go))
+                    {     
+                        go.CloneRole.HealthPoint = go.CloneRole.HealthPoint - playergo.CloneRole.AttackPoint
+                        
+                        if(go.CloneRole.HealthPoint <= 0)
+                        {
+                            var roleName = go.CloneRole.Name
+                            var roleCount = game.Roles.get(roleName)
+                            game.Roles.set(roleName, roleCount-1)            
+                        }
+
+                        console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " attack [" + go.CloneRole.Name + "](" + go.GOID +")")
+
+                        playergo.Score = playergo.Score + go.CloneRole.AttackReward
+
+                        pushMessageMap.set('onMapUpdate', {goid: goid, go: go});
+                        pushMessageMap.set('onPlayerScore', {userid: userid, score: playergo.Score}); 
+                    }
+                    else if(CanAcquire(playergo, go))
+                    {
+                        go.CloneRole.HealthPoint = 0
+
+                        var roleName = go.CloneRole.Name
+                        var roleCount = game.Roles.get(roleName)
+                        game.Roles.set(roleName, roleCount-1)     
+                        
+                        console.log(go)
+                        console.log("*****"+go.CloneRole)               
+
+                        console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " acquire [" + go.CloneRole.Name + "](" + go.GOID +")")
+
+                        playergo.Items.push(go.CloneRole.Name)
+                        playergo.ItemGos.push(go)
+
+                        pushMessageMap.set('onMapUpdate', {goid: goid, go: go});
+                        pushMessageMap.set('onPlayerItemUpdate', {userid: userid, items: playergo.Items});                   
+                    }
+                })              
+            }
+
+            game.UpdatePlayerUnderItem(pushMessageMap)
+            game.UpdateGameStopCondition(pushMessageMap)
+        }
+
         return game;
     }
 }
@@ -484,3 +686,4 @@ exports.getFlatternDistance = getFlatternDistance
 exports.ConfigureReader = ConfigureReader
 exports.CanAcquire = CanAcquire
 exports.CanAttack = CanAttack
+exports.GameObject = GameObject
