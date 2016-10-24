@@ -45,7 +45,7 @@ describe("Game Configure Reader",function(){
   describe("should read the configure files and return the configure map", function(){
      it("output the configure map",function(){
          var gameConfigures = gr.ConfigureReader()
-         console.log(gameConfigures)    
+         //console.log(gameConfigures)    
     });
    });
 });
@@ -55,8 +55,7 @@ describe("Game SetupMap",function(){
      it("2 roles, should assign as 1-1",function(){
          var game = new gr.Game.createNew(1,123,"testGame", "3", "beijing", 100, 1, 1, 0)
          var playerRoles =game.GetPlayerRoles(["pacman","ghost"],10,0.2)
-         console.log(playerRoles)
-      //   assert.equal(1,game.GetRoleCount(["pacman","ghost"],2,0.2),"get role count has problem")
+         assert.equal(1,game.GetRoleCount(["pacman","ghost"],2,0.2),"get role count has problem")
     });
    });
 });
@@ -121,8 +120,6 @@ describe("test can attack",function(){
        go.CloneRole.AttackRole = "apple"
        go2.CloneRole.HealthPoint = 1
        go2.Role = "apple"
-       console.log(go)
-       console.log(go2)
        assert.equal(true,gr.CanAttack(go,go2),"")
     });
    });
@@ -132,15 +129,90 @@ describe("Game Update Map",function(){
   describe("handle user position report and do the right update", function(){
      it("update Map general",function(){
         var gameMgr = new gr.GameManager.createNew()
-         var game = gameMgr.Create("123","testGame", 3, "beijing", 100, 1, 1, "Angel&deamon")
+         var game = gameMgr.Create("123","testGame", 3, "beijing", 100, 39.6831774030, 116.5865398605, "Angel&deamon")
          
+
          var params = new Array()
          var receiverList = new Array()
-         game.SetupMap(params, receiverList)
+         var gomap = game.SetupMap(params, receiverList)
+         
          var pushMessageMap= new Map()
-         game.UpdateMap("123", 10, 10, pushMessageMap)
+         
+          game.GOmap.get("apple_65").X = 39.682631182740906
+          game.GOmap.get("apple_65").Y = 116.59726636751364
+         
+         game.UpdateMap("123", 39.682631182740906, 116.59726636751364, pushMessageMap)
          console.log(pushMessageMap)
       //   assert.equal(1,game.GetRoleCount(["pacman","ghost"],2,0.2),"get role count has problem")
     });
+   });
+});
+
+describe("Game Join",function(){
+  describe("join game and got callback", function(){
+     it("game full, can not join",function(){
+         var gameMgr = new gr.GameManager.createNew()
+         
+         game = gameMgr.Create("user1","testGame", 1, "beijing", 0.5, 1, 1, "pacman")
+
+         var msg = {
+            gameid: 1,
+			      userid: "user2",
+            playerx: 2,
+            playery: 2
+        }
+
+        var success = false
+        var message = "GAME_NOT_FOUND"
+
+        game.Join(msg, success, message)
+        
+        assert.equal(1, game.CurrentPlayers.length , "player added") 
+        assert.equal(false, success, "false") 
+    });
+
+    it("user already in the game, can not join",function(){
+            var gameMgr = new gr.GameManager.createNew()
+            
+            game = gameMgr.Create("user1","testGame", 2, "beijing", 0.5, 1, 1, "pacman")
+
+            var msg = {
+                gameid: 1,
+                userid: "user1",
+                playerx: 2,
+                playery: 2
+            }
+
+            var success = false
+            var message = "GAME_NOT_FOUND"
+
+            game.Join(msg, success, message)
+            
+            assert.equal(1, game.CurrentPlayers.length , "player added") 
+            assert.equal(false, success, "false") 
+        });
+
+        it("user join the game",function(){
+            var gameMgr = new gr.GameManager.createNew()
+            
+            game = gameMgr.Create("user1","testGame", 2, "beijing", 0.5, 1, 1, "pacman")
+
+            var msg = {
+                gameid: 1,
+                userid: "user2",
+                playerx: 2,
+                playery: 2
+            }
+
+            var success = false
+            var message = "GAME_NOT_FOUND"
+
+            game.Join(msg, success, message)
+            
+            assert.equal(2, game.CurrentPlayers.length , "player added") 
+            assert.equal(2, game.Players.size , "player map add faile") 
+            assert.equal(false, success, "true") 
+        });
+
    });
 });

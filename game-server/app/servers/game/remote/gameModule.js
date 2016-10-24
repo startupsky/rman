@@ -191,6 +191,24 @@ var Ayo_GameManager=
     }
 }
 
+var Ayo_Player=
+{
+    createNew: function(userid, x, y, gameid)
+    {
+        var player={};
+        player.X = x
+        player.Y = y
+        player.Userid = userid
+        player.GameID = gameid.toString()  //maybe remove later
+        player.Role = "deamon"
+    
+        // TODO: will be removed later
+        player.State = "normal"
+        
+        return player
+    }
+}
+
 var Ayo_Game=
 {
     currentgameid:0,
@@ -217,6 +235,12 @@ var Ayo_Game=
 
         var player = new Ayo_Player.createNew(userid, centerlati, centerlong, game.ID)
         game.Players.set(userid,player)
+
+        game.GameResultInfo = function(userid, username, gain)
+        {
+            this.UserId = userid
+            this.Gain = gain
+        }
 
         game.GetRoleCount = function(roles,overallCounts, percentage)
         {
@@ -646,27 +670,180 @@ var Ayo_Game=
             game.UpdateGameStopCondition(pushMessageMap)
         }
 
+        game.UseItem = function(msg, success, message, pushMessageMap)
+        {
+            var userid = msg.userid
+            var x = parseFloat(msg.x)
+            var y = parseFloat(msg.y)
+            var index = parseInt(msg.itemIndex)
+            var player
+            
+
+            var targetList;
+
+            var gomap = game.GOmap
+            
+            if(!!gomap)
+            {           
+                
+                userGo = gomap.get("player_"+userid)
+                
+                
+                if(userGo.ItemGos.count<index+1)
+                {
+                    message = "client is using a item which is not exist! must be somethingwrong";
+                    console.log(message);
+                    success = false;
+                }
+                else
+                {
+                    message = "";
+                    success = true;
+                    
+                    var item = JSON.parse(JSON.stringify(userGo.ItemGos[index].CloneRole));
+                    console.log(item);
+                    console.log(item.Name);
+                    var targetRoles = item.TargetRole.split(",");
+                    var itemResults = item.Result;
+                    
+                    //channel.pushMessage('onPlayerUpdate', {userid:userGo.GOID,state:"Attack"});
+                    
+                game.CurrentPlayers.forEach(function(playerid)
+                {
+                    var playergo = gomap.get("player_"+playerid);
+                    if(playergo.UnderItem || playergo.State == "Dead")  //if the player is under item effect, do nothing, let the poor guy go...
+                    {
+                        return;
+                    }
+                    
+                    var targetRoleIndex = targetRoles.indexOf(playergo.Role);
+                    
+                    if(targetRoleIndex<0)  // not in the target list, do nothing for him/her
+                    {
+                        return;
+                    }
+                    
+                    console.log("find one player in the target list: "+playergo)
+                    var attackrange = userGo.ItemGos[index].CloneRole.AttackRange;
+    
+                    
+                    if(IsInRange(parseFloat(playergo.X),parseFloat(playergo.Y),x,y, attackrange))
+                    {
+                        console.log(userGo.Role+" use "+item.Name+" to "+playergo.Role)
+                        
+                        channel.pushMessage('onPlayerUnderItem', {user:parseInt(playergo.GOID.substr(6, playergo.GOID.length-6)),item:item})
+                        
+                        
+                        for(var resultindex = 0;resultindex<itemResults.length;resultindex++)
+                            {
+                                var result = itemResults[resultindex]
+                                console.log("***result: "+result)
+                                
+                                if(typeof(result.Power) != "undefined")
+                                {
+                                    console.log("power: "+result.Power)
+                                    console.log("health point :"+playergo.CloneRole.HealthPoint)
+                                    playergo.CloneRole.HealthPoint = playergo.CloneRole.HealthPoint-result.Power;
+                                    
+                                    if(playergo.CloneRole.HealthPoint <=0)
+                                    {
+                                        console.log("one of "+playergo.Role+" is been eliminate by"+userGo.Role)
+                                        playergo.State = "Dead"
+                                        
+                                        channel.pushMessage('onPlayerUpdate', {userid:playergo.GOID,state:"Dead"});
+                                        var roleCount = game.Roles.get(playergo.Role)
+                                        game.Roles.set(roleName, roleCount-1) 
+                                        
+                                        //这里需要添加分数系统逻辑
+                                    }
+                                }
+                                
+                                if(typeof(result.MoveRange) != "undefined")
+                                {
+                                    playergo.CloneRole.MoveRange = result.MoveRange;
+                                    if(playergo.CloneRole.MoveRange == 0)
+                                    {
+                                        playergo.State = "Freeze"
+                                        channel.pushMessage('onPlayerUpdate', {userid:playergo.GOID,state:"Freeze"});
+                                    }
+                                }
+                                if(typeof(result.AttackRange) != "undefined")
+                                {
+                                    playergo.CloneRole.AttackRange = result.AttackRange
+                                }
+                                
+                                if(result.Type == "Timer")
+                                {
+                                    playergo.UnderItem = true;
+                                    var now = new Date();
+                                    playergo.UnderItemStartTime = now.getTime()
+                                    playergo.UnderItemStopTime = playergo.UnderItemStartTime + result.Timer*1000
+                                }
+                                else if(result.Type == "Target")
+                                {
+                                    var targetx = parseFloat(msg.targetx)
+                                    var targety = parseFloat(msg.targety)
+                                    playergo.TargetX = targetx
+                                    playergo.TargetY = targety
+                                }
+                                else if(result.Type == "Once")
+                                {
+                                    playergo.Once = true
+                                }                            
+                            }
+                            
+                            playergo.Items.splice(index, 1)
+                            playergo.ItemGos.splice(index, 1)
+                            pushMessageMap.set('onPlayerItemUpdate', {userid: userid, items: playergo.Items}); 
+                        
+                    }
+                });
+                }         
+            }
+            
+            
+        }
+
+        game.Join = function(msg, success, message)
+        {
+            var userid = msg.userid
+            var playerx = parseFloat(msg.playerx)
+            var playery = parseFloat(msg.playery)
+            var success = false
+            var message = GAME_NOT_FOUND
+
+            
+            if (game.CurrentPlayers.length >= game.Maxplayer) 
+            {
+                message = GAME_FULL
+            }
+            else 
+            {
+                var found = false
+                for (var i = 0; i < game.CurrentPlayers.length; i++) {
+                    if (game.CurrentPlayers[i] === userid) {
+                        found = true
+                        break
+                    }
+                }
+                if (found) {
+                    message = ALREADY_IN_GAME
+                }
+                else {
+                    var player = new Ayo_Player.createNew(userid, playerx, playery, game.ID)
+                    game.Players.set(userid, player)
+                    game.CurrentPlayers.push(userid)
+                    message = ""
+                    success = true
+                }
+            }
+            
+        }
         return game;
     }
 }
 
-var Ayo_Player=
-{
-    createNew: function(userid, x, y, gameid)
-    {
-        var player={};
-        player.X = x
-        player.Y = y
-        player.Userid = userid
-        player.GameID = gameid.toString()  //maybe remove later
-        player.Role = "deamon"
-    
-        // TODO: will be removed later
-        player.State = "normal"
-        
-        return player
-    }
-}
+
 
 function Ayo_Item(name, description, targetRole, itemProperty)
 {
