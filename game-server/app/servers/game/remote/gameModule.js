@@ -340,6 +340,7 @@ var Ayo_Game=
                
             }
 
+
             var distanceX = 2/11000.0 // 2m for the item
             var distanceY = distanceX
             // Part 2: assign non-player roles
@@ -431,7 +432,11 @@ var Ayo_Game=
                             distribution[rowIndex][columnIndex] = 1
                             count++
                         }
-                    }       
+                        console.log("************")
+                    console.log(rowIndex+"    "+columnIndex)  
+                    console.log("************")  
+                    }   
+                    
                 } 
 
                 var roleid = 0
@@ -447,8 +452,6 @@ var Ayo_Game=
                         {
                             var pointX = startPointLati + 0.5*distanceX + i*distanceX
                             var pointY = startPointLong + 0.5*distanceY + j*distanceY
-
-                            console.log("distanceX: "+distanceX+" distanceY:"+distanceY)
                             
                             var rolegoid = role.Name + "_"+ roleid
                             roleid = roleid + 1
@@ -467,14 +470,23 @@ var Ayo_Game=
                             }    
                         }
                     }
-                } 
+                }
+
+                console.log("************"+role.Name+"********row:"+row+"***********") 
+                for (var i = 0; i < row; i++){
+                    var strout=""
+                    for (var j=0; j < column;j++){
+                    strout = strout + distribution[i][j]
+                    }
+                    console.log(strout)
+                }
             }
 
             game.GOmap =gomap
             return gomap
         }
 
-        game.UpdatePlayerUnderItem =function(pushMessageMap)
+        game.UpdatePlayerUnderItem =function(pushMessageArray)
         {
             var gomap = game.GOmap
             for(var playerid of game.CurrentPlayers)
@@ -492,7 +504,7 @@ var Ayo_Game=
                             playergo.UnderItemStartTime = null
                             playergo.UnderItemStopTime = null
                             
-                            pushMessageMap.set('onPlayerUpdate', {userid:userGo.GOID,state:"Normal"});
+                            pushMessageArray.push({event:'onPlayerUpdate', msg:{userid:userGo.GOID,state:"Normal"}});
                         }
                     }
                     else if(!!playergo.TargetX && !!playergo.TargetY)
@@ -505,7 +517,7 @@ var Ayo_Game=
                             playergo.TargetX = null
                             playergo.TargetY = null 
                             
-                            pushMessageMap.set('onPlayerOffItem', {user:playerid})                    
+                            pushMessageArray.push({event:'onPlayerOffItem', msg:{user:playerid}})                    
                         }
                     }
                     else if(!!playergo.Once)
@@ -514,13 +526,13 @@ var Ayo_Game=
                         playergo.UnderItem = false
                         playergo.Once = false
                         
-                        pushMessageMap.set('onPlayerOffItem', {user:playerid})                   
+                        pushMessageArray.push({event:'onPlayerOffItem', msg:{user:playerid}})                   
                     }
                 }
             }
         }
 
-        game.UpdateGameResult = function(pushMessageMap)
+        game.UpdateGameResult = function(pushMessageArray)
         { 
             var playerList = new Array()
 
@@ -538,7 +550,7 @@ var Ayo_Game=
                             playerList[endIndex--] = playerInfo;
                         }
                     }
-            pushMessageMap.set('onStop', playerList);
+            pushMessageArray.push({event:'onStop', msg:playerList});
         }
 
         function OnGameFinished(gameid)
@@ -564,7 +576,7 @@ var Ayo_Game=
 
         }
 
-        game.UpdateGameStopCondition = function (pushMessageMap)
+        game.UpdateGameStopCondition = function (pushMessageArray)
         {
             var stopCondition = (ConfigureReader()).get(game.GameType).StopCondition
             var stateInfo = []
@@ -579,7 +591,7 @@ var Ayo_Game=
                     {
                         game.Winer = condition.Winer
                     // generateGameResult
-                        game.UpdateGameResult(pushMessageMap)
+                        game.UpdateGameResult(pushMessageArray)
                         return
                     }
                     
@@ -596,17 +608,17 @@ var Ayo_Game=
                     if(roleCount == condition.Count)
                     {
                         game.Winer = condition.Winer
-                        game.UpdateGameResult(pushMessageMap)
+                        game.UpdateGameResult(pushMessageArray)
                         return
                     }
                     stateInfo.push({role:condition.Role,value:roleCount})
                 }
             }
             
-            pushMessageMap.set('onStateUpdate', {state:stateInfo});
+            pushMessageArray.push({event:'onStateUpdate', msg:{state:stateInfo}});
         }
 
-        game.UpdateMap= function(userid, x, y, pushMessageMap)
+        game.UpdateMap= function(userid, x, y, pushMessageArray)
         {
             var playergo = game.GOmap.get("player_"+userid)
             var gomap = game.GOmap
@@ -617,7 +629,7 @@ var Ayo_Game=
                 var limit = playergo.CloneRole.MoveRange/111000 // 1m
                 if(Math.abs(x-playergo.X) >= limit || Math.abs(y-playergo.Y) >= limit)
                 {
-                    pushMessageMap.set('onOutScope', {userid:userid,x:playergo.X,y:playergo.Y})           
+                    pushMessageArray.push({event:'onOutScope', msg:{userid:userid,x:playergo.X,y:playergo.Y}})         
                     canmove = false
                 }
             }
@@ -641,8 +653,8 @@ var Ayo_Game=
 
                         playergo.Score = playergo.Score + go.CloneRole.AttackReward
 
-                        pushMessageMap.set('onMapUpdate', {goid: goid, go: go});
-                        pushMessageMap.set('onPlayerScore', {userid: userid, score: playergo.Score}); 
+                        pushMessageArray.push({event:'onMapUpdate', msg:{goid: goid, go: go}});
+                        pushMessageArray.push({event:'onPlayerScore', msg:{userid: userid, score: playergo.Score}}); 
                     }
                     else if(CanAcquire(playergo, go))
                     {
@@ -660,17 +672,18 @@ var Ayo_Game=
                         playergo.Items.push(go.CloneRole.Name)
                         playergo.ItemGos.push(go)
 
-                        pushMessageMap.set('onMapUpdate', {goid: goid, go: go});
-                        pushMessageMap.set('onPlayerItemUpdate', {userid: userid, items: playergo.Items});                   
+                        pushMessageArray.push({event:'onMapUpdate', msg:{goid: goid, go: go}});
+                        pushMessageArray.push({event:'onPlayerItemUpdate', msg:{userid: userid, items: playergo.Items}});
+                                        
                     }
                 })              
             }
 
-            game.UpdatePlayerUnderItem(pushMessageMap)
-            game.UpdateGameStopCondition(pushMessageMap)
+            game.UpdatePlayerUnderItem(pushMessageArray)
+            game.UpdateGameStopCondition(pushMessageArray)
         }
 
-        game.UseItem = function(msg, success, message, pushMessageMap)
+        game.UseItem = function(msg, success, message, pushMessageArray)
         {
             var userid = msg.userid
             var x = parseFloat(msg.x)
@@ -794,7 +807,7 @@ var Ayo_Game=
                             
                             playergo.Items.splice(index, 1)
                             playergo.ItemGos.splice(index, 1)
-                            pushMessageMap.set('onPlayerItemUpdate', {userid: userid, items: playergo.Items}); 
+                            pushMessageArray.push({event:'onPlayerItemUpdate', msg:{userid: userid, items: playergo.Items}}); 
                         
                     }
                 });

@@ -78,15 +78,15 @@ function SetupMap(game, channelService)
 
 function UpdateMap(gameid, userid, x, y)
 {
-    var pushMessageMap = new map()
+    var pushMessageArray = new Array()
 
-    gameManager.game[gameid].UpdateMap(userid, x, y, pushMessageMap)
+    gameManager.game[gameid].UpdateMap(userid, x, y, pushMessageArray)
     
 
     var channel = channels.get(gameid)
-    for(var key in pushMessageMap)
+    for(var index in pushMessageArray)
     {
-        channel.pushMessage(key, pushMessageMap[key]);
+        channel.pushMessage(pushMessageArray[index].event, pushMessageArray[index].msg);
     }
 
 
@@ -512,11 +512,11 @@ GameRemote.prototype.useitem = function (msg, next) {
 
     var gameid = msg.gameid
     var game = gameManager.games[gameid]
-    var pushMessageMap = Map()
+    var pushMessageArray = Array()
     var channel = channels.get(gameid)
     
     if(!!game)
-        game.UseItem(msg, success, message, pushMessageMap)
+        game.UseItem(msg, success, message, pushMessageArray)
     
 
     channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items}); 

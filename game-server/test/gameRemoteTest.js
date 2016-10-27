@@ -12,14 +12,19 @@
 describe("Game Create",function(){
   describe("new game created", function(){
      it("check all the game info is been updated",function(){
+         var arr = new Array()
          var mm = new Map()
          mm.set(1, "hh")
-         mm.set(1, "hh")
-         mm.set(2, "hh")
-         mm.set(1, "hh")
-         mm.set(1, "hh")
-         mm.set(1, "hhg")
-         console.log(mm)
+
+         arr.push({id:1, value:"hh"})
+         arr.push({id:1, value:"hh"})
+         arr.push({id:1, value:"hh"})
+         arr.push({id:1, value:"hh"})
+         arr.push({id:1, value:"hh"})
+         arr.push({id:1, value:"hh"})
+         arr.push({id:1, value:"hh"})
+
+         console.log(arr[2].id)
     });
    });
 });
