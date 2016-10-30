@@ -443,9 +443,6 @@ var Ayo_Game=
                 var startPointLati = parseFloat(game.CenterLati)-(parseInt(game.Radius)/(1.414*111000))
                 var startPointLong = parseFloat(game.CenterLong) - (parseInt(game.Radius)/(1.414*111000))
 
-                row=1;
-                colum = 1
-
                 for (var i = 0; i < row; i++){
                     for (var j=0; j < column;j++){
                         if(distribution[i][j]==1)
@@ -472,14 +469,15 @@ var Ayo_Game=
                     }
                 }
 
-                console.log("************"+role.Name+"********row:"+row+"***********") 
-                for (var i = 0; i < row; i++){
-                    var strout=""
-                    for (var j=0; j < column;j++){
-                    strout = strout + distribution[i][j]
-                    }
-                    console.log(strout)
-                }
+                // draw the map with 0,1
+                // console.log("************"+role.Name+"********row:"+row+"***********") 
+                // for (var i = 0; i < row; i++){
+                //     var strout=""
+                //     for (var j=0; j < column;j++){
+                //     strout = strout + distribution[i][j]
+                //     }
+                //     console.log(strout)
+                // }
             }
 
             game.GOmap =gomap
@@ -662,10 +660,7 @@ var Ayo_Game=
 
                         var roleName = go.CloneRole.Name
                         var roleCount = game.Roles.get(roleName)
-                        game.Roles.set(roleName, roleCount-1)     
-                        
-                        console.log(go)
-                        console.log("*****"+go.CloneRole)               
+                        game.Roles.set(roleName, roleCount-1)                  
 
                         console.log("UpdateMap: ["+ playergo.CloneRole.Name + "]("+ playergo.GOID + ")" + " acquire [" + go.CloneRole.Name + "](" + go.GOID +")")
 
