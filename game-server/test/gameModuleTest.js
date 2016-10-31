@@ -141,9 +141,9 @@ describe("Game Update Map",function(){
          game.UpdateMap("123", game.GOmap.get("apple_62").X, game.GOmap.get("apple_62").Y, pushMessageArray)
          assert.equal(1, game.GOmap.get("player_123").Score, "player score udpate error")
          assert.equal(0, game.GOmap.get("apple_62").CloneRole.HealthPoint, "apple state update error")
-         console.log("******************")
-         console.log(pushMessageArray)
-         console.log("******************")
+        //  console.log("******************")
+        //  console.log(pushMessageArray)
+        //  console.log("******************")
 
          assert.equal("onMapUpdate",pushMessageArray[0].event,"didn't get map update message")
          assert.equal("apple_62", pushMessageArray[0].msg.goid, "object update error")
@@ -224,6 +224,41 @@ describe("Game Update Map",function(){
          assert.equal("onPlayerItemUpdate",pushMessageArray[3].event,"didn't get score update message")
          assert.equal("123", pushMessageArray[3].msg.userid, "user name update error")
          assert.equal(game.GOmap.get("player_123").Items, pushMessageArray[3].msg.items, "item message error")
+         
+    });
+    it("role condition reached",function(){
+        var gameMgr = new gr.GameManager.createNew()
+         var game = gameMgr.Create("123","testGame", 3, "beijing", 100, 39.6831774030, 116.5865398605, "Angel&deamon")
+         
+        
+         var params = new Array()
+         var receiverList = new Array()
+         var gomap = game.SetupMap(params, receiverList)
+         
+         var pushMessageArray= new Array()
+         
+         console.log(game.Roles.get("apple"))
+         game.Roles.set("apple", 1)
+
+         game.UpdateMap("123", game.GOmap.get("LightOfPunishment_0").X, game.GOmap.get("LightOfPunishment_0").Y, pushMessageArray)
+         
+          console.log("******************")
+         // console.log(pushMessageArray)
+         assert.equal("onStop", pushMessageArray[4].event, "game stopped error")
+         assert.equal("123", pushMessageArray[4].msg[0].userid, "user id error")
+         assert.equal("+20", pushMessageArray[4].msg[0].gain, "user id error")
+         assert.equal(game.GOmap.get("player_123").Role, game.Winer, "game winner not correct!")
+         console.log("******************")
+        //  assert.equal(0, game.GOmap.get("LightOfPunishment_0").CloneRole.HealthPoint, "apple state update error")
+        //  assert.equal("LightOfPunishment", game.GOmap.get("player_123").Items[0], "item update error")
+        //  assert.equal(1, game.GOmap.get("player_123").Items.length, "item update error "+game.GOmap.get("player_123").Items.length)
+
+        //  assert.equal("onMapUpdate",pushMessageArray[2].event,"didn't get map update message")
+        //  assert.equal("LightOfPunishment_0", pushMessageArray[2].msg.goid, "object update error")
+        //  assert.equal(0, pushMessageArray[2].msg.go.CloneRole.HealthPoint,"clone role health update error")
+        //  assert.equal("onPlayerItemUpdate",pushMessageArray[3].event,"didn't get score update message")
+        //  assert.equal("123", pushMessageArray[3].msg.userid, "user name update error")
+        //  assert.equal(game.GOmap.get("player_123").Items, pushMessageArray[3].msg.items, "item message error")
          
     });
    });

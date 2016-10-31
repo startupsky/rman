@@ -236,10 +236,10 @@ var Ayo_Game=
         var player = new Ayo_Player.createNew(userid, centerlati, centerlong, game.ID)
         game.Players.set(userid,player)
 
-        game.GameResultInfo = function(userid, username, gain)
+        game.GameResultInfo = function(userid, gain)
         {
-            this.UserId = userid
-            this.Gain = gain
+            this.userid = userid
+            this.gain = gain
         }
 
         game.GetRoleCount = function(roles,overallCounts, percentage)
@@ -432,9 +432,6 @@ var Ayo_Game=
                             distribution[rowIndex][columnIndex] = 1
                             count++
                         }
-                        console.log("************")
-                    console.log(rowIndex+"    "+columnIndex)  
-                    console.log("************")  
                     }   
                     
                 } 
@@ -537,14 +534,14 @@ var Ayo_Game=
             var startIndex = 0
             var endIndex = game.CurrentPlayers.length-1
             for (var i = 0; i < game.CurrentPlayers.length; i++) {
-                        if (game.CurrentPlayers[i].role === game.Winer) {
-                            var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
+                        if (game.GOmap.get("player_"+game.CurrentPlayers[i]).Role === game.Winer) {
+                            var playerInfo = new game.GameResultInfo(game.CurrentPlayers[i], "+20")
 
                             playerList[startIndex++] = playerInfo;
                         }
                         else
                         {
-                            var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
+                            var playerInfo = new game.GameResultInfo(game.CurrentPlayers[i], "-5")
                             playerList[endIndex--] = playerInfo;
                         }
                     }
@@ -560,17 +557,17 @@ var Ayo_Game=
             var endIndex = game.CurrentPlayers.length-1
             for (var i = 0; i < game.CurrentPlayers.length; i++) {
                         if (game.CurrentPlayers[i].role === game.Winer) {
-                            var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
+                            var playerInfo = new game.GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
 
                             playerList[startIndex++] = playerInfo;
                         }
                         else
                         {
-                            var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
+                            var playerInfo = new game.GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
                             playerList[endIndex--] = playerInfo;
                         }
                     }
-            var gameResult = new GameStopInfo(gameid,game.Winer,playerList)
+           // var gameResult = new GameStopInfo(gameid,game.Winer,playerList)
 
         }
 
@@ -745,7 +742,7 @@ var Ayo_Game=
                         for(var resultindex = 0;resultindex<itemResults.length;resultindex++)
                             {
                                 var result = itemResults[resultindex]
-                                console.log("***result: "+result)
+                              //  console.log("***result: "+result)
                                 
                                 if(typeof(result.Power) != "undefined")
                                 {
