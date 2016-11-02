@@ -140,14 +140,14 @@ GameRemote.prototype.join = function (msg, serverid, next) {
 
     var success = false
     var message = GAME_NOT_FOUND
-
+    var feedbackInfo = {success:success, message:message}
     var game = gameManager.games[gameid]
     if(!!game)
     {
-        game.Join(msg, success, message)
+        game.Join(msg, feedbackInfo)
     }
 
-    if(success == true)
+    if(feedbackInfo.success == true)
     {
         var channel = channels.get(gameid)
         channel.pushMessage('onJoin', {user:userid});
@@ -155,44 +155,43 @@ GameRemote.prototype.join = function (msg, serverid, next) {
     }
 
     next(null, {
-        success: success,
-        message: message
+        success: feedbackInfo.success,
+        message: feedbackInfo.message
     });
 };
 
 GameRemote.prototype.leave = function (msg, serverid, next) {
     var gameid = msg.gameid
+
     var userid = msg.userid
     var success = false
     var message = GAME_NOT_FOUND
+    var pushMessageArray = new Array()
+    var feedbackInfo = {success:success, message:message}
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)            
-        if (game.CurrentPlayers.indexOf(userid) > -1) {
-            message = ""
-            success = true
-            players.delete(userid)
-            game.CurrentPlayers.splice(index, 1)
-            var channel = channels.get(gameid)
-            console.log("***use leave the game.")
-            channel.leave(userid, serverid)
-            channel.pushMessage('onLeave', {user:userid});
-            if (game.CurrentPlayers.length == 0) {
-                DeleteGame(gameid)
-            }
-            else if (game.Host == userid) {
-                game.Host = game.CurrentPlayers[0]
-            }
-        }
-        else {
-            message = NOT_IN_GAME
-        }        
+        
+        game.Leave(msg, feedbackInfo ,pushMessageArray)
+             
     }
 
+
+    var channel = channels.get(gameid)
+    for(var index in pushMessageArray)
+    {
+        channel.pushMessage(pushMessageArray[index].event, pushMessageArray[index].msg);
+    }
+    if(feedbackInfo.success == true)
+    {
+        channel.leave(userid, serverid)
+        channel.pushMessage('onLeave', {user:userid});
+    }
+    
     next(null, {
-        success: success,
-        message: message
+        success: feedbackInfo.success,
+        message: feedbackInfo.message
     });
 };
 
@@ -202,9 +201,9 @@ GameRemote.prototype.start = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)
         if (userid === game.Host) {
             if (game.State === GAME_STATE_WAITING) {
                     success = true
@@ -237,16 +236,22 @@ GameRemote.prototype.stop = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)
         if (userid === game.Host) {
             if (game.State === GAME_STATE_STARTED) {
                 success = true
                 message = ""
                 game.State = GAME_STATE_STOPPED
                 
-                DeleteGame(gameid)
+                var pushMessageArray = new Array()
+                game.UpdateGameResult(pushMessageArray)
+                var channel = channels.get(gameid)
+                for(var index in pushMessageArray)
+                {
+                    channel.pushMessage(pushMessageArray[index].event, pushMessageArray[index].msg);
+                }
             }
             else {
                 message = GAME_NOT_STARTED
@@ -263,67 +268,18 @@ GameRemote.prototype.stop = function (msg, next) {
     });
 };
 
-// delete game. 1) delete users. 2) save scores. 3) delete game. 4) delete channel. 5) delete game map.
-function DeleteGame(gameid)
-{ 
-    // var gomap = maps.get(gameid)
-    // var game = games.get(gameid)
-    
-    // var gameStopInfo = new GameStopInfo(gameid, game.Winer)
-    
-    // for(var playerid of game.CurrentPlayers)
-    // {
-    //     players.delete(playerid)
-    //     var playergo = gomap.get("player_"+playerid)
-    //     if(!!playergo)
-    //     {
-    //         SaveUserInfo(playerid, playergo.Score) 
-    //         gameStopInfo.Players.push(playerid + ":" + playergo.Score)              
-    //     }
-    // }
-
-
-
-    var game = games.get(gameid)
-    var playerList = new Array()
-
-    var startIndex = 0
-    var endIndex = game.CurrentPlayers.length-1
-    for (var i = 0; i < game.CurrentPlayers.length; i++) {
-                if (game.CurrentPlayers[i].role === game.Winer) {
-                    var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "+20")
-
-                    playerList[startIndex++] = playerInfo;
-                }
-                else
-                {
-                    var playerInfo = new GameResultInfo(game.CurrentPlayers[i].Userid, "-5")
-                    playerList[endIndex--] = playerInfo;
-                }
-            }
-
-
-
-    
-    var channel = channels.get(gameid)
-    channel.pushMessage('onStop', playerList);
-    
-    // games.delete(gameid)     
-    // channels.delete(gameid)
-    // maps.delete(gameid)
-}
 
 GameRemote.prototype.querymap = function (msg, next) {
     var gameid = msg.gameid
     var success = false
     var message = GAME_NOT_FOUND
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)
         if(game.State === GAME_STATE_STARTED)
         {
-            var map = maps.get(gameid)
+            var map = game.GOmap
             success = true
             message = ""
         }
@@ -514,16 +470,17 @@ GameRemote.prototype.useitem = function (msg, next) {
     var game = gameManager.games[gameid]
     var pushMessageArray = Array()
     var channel = channels.get(gameid)
-    
+    var feedbackInfo = {success:success, message:message}
+
     if(!!game)
-        game.UseItem(msg, success, message, pushMessageArray)
+        game.UseItem(msg, feedbackInfo, pushMessageArray)
     
 
     channel.pushMessage('onPlayerItemUpdate', {userid: userid, items: playergo.Items}); 
 
     next(null, {
-        success: success,
-        message: message
+        success: feedbackInfo.success,
+        message: feedbackInfo.message
     });
 };
 

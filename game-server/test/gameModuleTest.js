@@ -280,11 +280,11 @@ describe("Game Join",function(){
 
         var success = false
         var message = "GAME_NOT_FOUND"
-
-        game.Join(msg, success, message)
+        var feedbackInfo = {success:success, message:message}
+        game.Join(msg, feedbackInfo)
         
         assert.equal(1, game.CurrentPlayers.length , "player added") 
-        assert.equal(false, success, "false") 
+        assert.equal(false, feedbackInfo.success, "false") 
     });
 
     it("user already in the game, can not join",function(){
@@ -301,11 +301,11 @@ describe("Game Join",function(){
 
             var success = false
             var message = "GAME_NOT_FOUND"
-
-            game.Join(msg, success, message)
+            var feedbackInfo = {success:success, message:message}
+            game.Join(msg, feedbackInfo)
             
             assert.equal(1, game.CurrentPlayers.length , "player added") 
-            assert.equal(false, success, "false") 
+            assert.equal(false, feedbackInfo.success, "false") 
         });
 
         it("user join the game",function(){
@@ -322,12 +322,77 @@ describe("Game Join",function(){
 
             var success = false
             var message = "GAME_NOT_FOUND"
-
-            game.Join(msg, success, message)
+            var feedbackInfo = {success:success, message:message}
+            game.Join(msg, feedbackInfo)
             
             assert.equal(2, game.CurrentPlayers.length , "player added") 
             assert.equal(2, game.Players.size , "player map add faile") 
-            assert.equal(false, success, "true") 
+            assert.equal(true, feedbackInfo.success, "true") 
+        });
+
+   });
+});
+
+describe("Game Leave",function(){
+  describe("leave game and got callback", function(){
+     it("not host, succesful leave the game",function(){
+         var gameMgr = new gr.GameManager.createNew()
+         
+         game = gameMgr.Create("user1","testGame", 4, "beijing", 0.5, 1, 1, "pacman")
+
+         var msg = {
+            gameid: 1,
+            userid: "user2",
+            playerx: 2,
+            playery: 2
+        }
+
+        var success = false
+        var message = "GAME_NOT_FOUND"
+        var feedbackInfo = {success:success, message:message}
+        game.Join(msg, feedbackInfo)      
+
+        msg = {
+            gameid: 1,
+            userid: "user2"
+        }
+        var pushMessageArray = new Array()
+        
+        var feedbackInfo = {success:success, message:message}
+        game.Leave(msg, feedbackInfo, pushMessageArray)
+   
+        assert.equal(1, game.CurrentPlayers.length , "player added") 
+        assert.equal(true, feedbackInfo.success, "false") 
+    });
+
+    it("host, successful leave the game and update the host",function(){
+            var gameMgr = new gr.GameManager.createNew()
+         
+         game = gameMgr.Create("user1","testGame", 4, "beijing", 0.5, 1, 1, "pacman")
+
+         var msg = {
+            gameid: 1,
+            userid: "user2",
+            playerx: 2,
+            playery: 2
+        }
+
+        var success = false
+        var message = "GAME_NOT_FOUND"
+        var feedbackInfo = {success:success, message:message}
+        game.Join(msg, feedbackInfo)       
+
+        var msg = {
+            gameid: 1,
+            userid: "user1"
+        }
+        var pushMessageArray = new Array()
+        var feedbackInfo = {success:success, message:message}
+        game.Leave(msg, feedbackInfo, pushMessageArray)
+
+        assert.equal(1, game.CurrentPlayers.length , "player added")
+        assert.equal("user2", game.Host , "player added") 
+        assert.equal(true, feedbackInfo.success, "false") 
         });
 
    });

@@ -675,14 +675,13 @@ var Ayo_Game=
             game.UpdateGameStopCondition(pushMessageArray)
         }
 
-        game.UseItem = function(msg, success, message, pushMessageArray)
+        game.UseItem = function(msg, feedbackInfo, pushMessageArray)
         {
             var userid = msg.userid
             var x = parseFloat(msg.x)
             var y = parseFloat(msg.y)
             var index = parseInt(msg.itemIndex)
             var player
-            
 
             var targetList;
 
@@ -696,18 +695,15 @@ var Ayo_Game=
                 
                 if(userGo.ItemGos.count<index+1)
                 {
-                    message = "client is using a item which is not exist! must be somethingwrong";
-                    console.log(message);
-                    success = false;
+                    feedbackInfo.message = "client is using a item which is not exist! must be somethingwrong";
+                    feedbackInfo.success = false;
                 }
                 else
                 {
-                    message = "";
-                    success = true;
+                    feedbackInfo.message = "";
+                    feedbackInfo.success = true;
                     
                     var item = JSON.parse(JSON.stringify(userGo.ItemGos[index].CloneRole));
-                    console.log(item);
-                    console.log(item.Name);
                     var targetRoles = item.TargetRole.split(",");
                     var itemResults = item.Result;
                     
@@ -809,18 +805,18 @@ var Ayo_Game=
             
         }
 
-        game.Join = function(msg, success, message)
+        game.Join = function(msg, feedbackInfo)
         {
             var userid = msg.userid
             var playerx = parseFloat(msg.playerx)
             var playery = parseFloat(msg.playery)
-            var success = false
-            var message = GAME_NOT_FOUND
+            feedbackInfo.success = false
+            feedbackInfo.message = GAME_NOT_FOUND
 
             
             if (game.CurrentPlayers.length >= game.Maxplayer) 
             {
-                message = GAME_FULL
+                feedbackInfo.message = GAME_FULL
             }
             else 
             {
@@ -832,18 +828,40 @@ var Ayo_Game=
                     }
                 }
                 if (found) {
-                    message = ALREADY_IN_GAME
+                    feedbackInfo.message = ALREADY_IN_GAME
                 }
                 else {
                     var player = new Ayo_Player.createNew(userid, playerx, playery, game.ID)
                     game.Players.set(userid, player)
                     game.CurrentPlayers.push(userid)
-                    message = ""
-                    success = true
+                    feedbackInfo.message = ""
+                    feedbackInfo.success = true
                 }
             }
             
         }
+
+        game.Leave = function(msg, feedbackInfo, pushMessageArray)
+        {
+                       
+            if (game.CurrentPlayers.indexOf(userid) > -1) {
+                feedbackInfo.message = ""
+                feedbackInfo.success = true
+                game.Players.delete(userid)
+                game.CurrentPlayers.splice(game.CurrentPlayers.indexOf(userid), 1)
+                console.log("***user "+userid+" leave the game.")
+                
+                if (game.CurrentPlayers.length == 0) {
+                    game.UpdateGameResult(pushMessageArray)
+                }
+                else if (game.Host == userid) {
+                    game.Host = game.CurrentPlayers[0]
+                }
+            }
+            else {
+                feedbackInfo.message = NOT_IN_GAME
+            }  
+        } 
         return game;
     }
 }
