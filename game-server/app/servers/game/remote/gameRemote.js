@@ -1056,11 +1056,11 @@ GameRemote.prototype.report = function (msg, next) {
     // });
 };
 
-GameRemote.prototype.reportalluser = function (msg, next) {
-    next(null, {
-        players: JSON.stringify(Array.from(players.values()))
-    });
-};
+// GameRemote.prototype.reportalluser = function (msg, next) {
+//     next(null, {
+//         players: JSON.stringify(Array.from(players.values()))
+//     });
+// };
                     
 GameRemote.prototype.reportusersforgame = function (msg, next){
     var gameid = msg.gameid

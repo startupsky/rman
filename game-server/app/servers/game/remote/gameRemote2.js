@@ -300,11 +300,13 @@ GameRemote.prototype.report = function (msg, next) {
     var userid = msg.userid
     var x = parseFloat(msg.x)
     var y = parseFloat(msg.y)
+    var gameid = msg.gameid
     var player
-    if(players.has(userid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
+        player = game.Players.get(userid)
         var limit = 1.0/111000 // 1m
-        player = players.get(userid)
         var channel = channels.get(player.GameID)
         if(player.State == "Dead")
         {
@@ -356,12 +358,12 @@ GameRemote.prototype.report = function (msg, next) {
     //     player: JSON.stringify(player)
     // });
 };
-
-GameRemote.prototype.reportalluser = function (msg, next) {
-    next(null, {
-        players: JSON.stringify(Array.from(players.values()))
-    });
-};
+// comment it first because not useful for now and the implemetation is no longer fit for the new design
+// GameRemote.prototype.reportalluser = function (msg, next) {
+//     next(null, {
+//         players: JSON.stringify(Array.from(players.values()))
+//     });
+// };
                     
 GameRemote.prototype.reportusersforgame = function (msg, next){
     var gameid = msg.gameid
@@ -369,24 +371,25 @@ GameRemote.prototype.reportusersforgame = function (msg, next){
     var message = GAME_NOT_FOUND
     var players = ""
     
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
         success = true
         message = ""
-        var game = games.get(gameid)
         players = JSON.stringify(game.CurrentPlayers)
     }
     next(null, {
         success: success,
         message: message,
-        players: players
+        players: game.Players
     })
 }
 
 GameRemote.prototype.send = function(msg, next) {
     var gameid = msg.gameid
     
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
         var param = {
             msg: msg.content,
@@ -423,9 +426,9 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)
         if (userid === game.Host) {           
             if (game.CurrentPlayers.indexOf(kickuserid) > -1) {
                 message = ""
@@ -491,10 +494,10 @@ GameRemote.prototype.dropitem = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)
-        var gomap = maps.get(gameid)
+        var gomap = game.GOmap.get(gameid)
         if(!!gomap)
         {
             var playergo = gomap.get("player_"+userid)
@@ -536,16 +539,16 @@ GameRemote.prototype.freezeuser = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)
         if (true) { // later need check if user have this ability          
             if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
                 message = ""
                 success = true
                 var channel = channels.get(gameid)
                 channel.pushMessage('onPlayerFreezed', {user:freezeuserid})
-                var player = players.get(freezeuserid)
+                var player = game.Players.get(freezeuserid)
                 player.State = "freeze"
             }
             else
@@ -571,16 +574,16 @@ GameRemote.prototype.unfreezeuser = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)
         if (true) { // later need check if user have this ability          
             if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
                 message = ""
                 success = true
                 var channel = channels.get(gameid)
                 channel.pushMessage('onPlayerUnFreezed', {user:unfreezeuserid})
-                var player = players.get(unfreezeuserid)
+                var player = game.Players.get(unfreezeuserid)
                 player.State = "normal"
             }
             else
@@ -608,16 +611,16 @@ GameRemote.prototype.targetuser = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    if(games.has(gameid))
+    var game = gameManager.games[gameid]
+    if(!!game)
     {
-        var game = games.get(gameid)
         if (true) { // later need check if user have this ability          
             if (game.CurrentPlayers.indexOf(targetuserid) > -1) {
                 message = ""
                 success = true
                 var channel = channels.get(gameid)
                 channel.pushMessage('onPlayerTargeted', {user:targetuserid, targetx:targetx, targety:targety})
-                var player = players.get(targetuserid)
+                var player = game.Players.get(targetuserid)
                 player.State = "target"
                 player.TargetX = targetx
                 player.TargetY = targety

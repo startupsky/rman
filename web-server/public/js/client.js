@@ -385,11 +385,14 @@ $(document).ready(function() {
          
     $("#report").click(function () {
         var route = "game.gameHandler.report";
+
         var x = $("#playerx").attr("value");
         var y = $("#playery").attr("value");
+        var gameid = $("#gameid").attr("value");
         
         pomelo.request(route, {
 			userid: userid,
+            gameid:gameid,
             x:x,
             y:y
         }, function (data) {

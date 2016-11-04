@@ -47,9 +47,9 @@ handler.report = function (msg, session, next) {
     this.app.rpc.game.gameRemote.report(session, msg, next);
 };
 
-handler.reportalluser = function (msg, session, next) {
-    this.app.rpc.game.gameRemote.reportalluser(session, msg, next);
-};
+// handler.reportalluser = function (msg, session, next) {
+//     this.app.rpc.game.gameRemote.reportalluser(session, msg, next);
+// };
 
 handler.reportusersforgame = function (msg, session, next){
     this.app.rpc.game.gameRemote.reportusersforgame(session, msg, next);
@@ -75,9 +75,9 @@ handler.targetuser = function (msg, session, next) {
     this.app.rpc.game.gameRemote.targetuser(session, msg, next);
 };
 
-handler.attackrange = function (msg, session, next) {
-    this.app.rpc.game.gameRemote.attackrange(session, msg, next);
-};
+// handler.attackrange = function (msg, session, next) {
+//     this.app.rpc.game.gameRemote.attackrange(session, msg, next);
+// };
 
 handler.useitem = function (msg, session, next) {
     this.app.rpc.game.gameRemote.useitem(session, msg, next);

@@ -166,6 +166,7 @@ Sort by the distance to x,y. If X or Y is not given, then no sort will be perfor
 ```
 {
 	userid: userid,
+	gameid: gameid,
     x:x,
     y:y
 }
