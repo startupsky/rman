@@ -44,7 +44,12 @@ function CanAttack(playergo, go)
 
         if(attackRoles.indexOf(go.CloneRole.Name) > -1)
         {
-            var attackrange = playergo.CloneRole.AttackRange
+            var attackrange = parseFloat(playergo.CloneRole.AttackRange)
+            console.log("&&&&a"+playergo.X)
+            console.log("&&&&b"+playergo.Y)
+            console.log("&&&&c"+go.X)
+            console.log("&&&&d"+go.Y)
+            console.log("&&&&e"+attackrange)
             return IsInRange(parseFloat(playergo.X), parseFloat(playergo.Y),parseFloat(go.X),parseFloat(go.Y), attackrange)
         }
     }
@@ -67,7 +72,8 @@ function CanAcquire(playergo, go)
 
 function IsInRange(x1, y1, x2, y2, range)
 {
-    var distance = getFlatternDistance(x1,y1,x2,y2)    
+    var distance = getFlatternDistance(x1,y1,x2,y2)  
+    console.log("#####"+distance)  
     return distance < range
 }
 
@@ -887,3 +893,4 @@ exports.ConfigureReader = ConfigureReader
 exports.CanAcquire = CanAcquire
 exports.CanAttack = CanAttack
 exports.GameObject = GameObject
+exports.IsInRange = IsInRange

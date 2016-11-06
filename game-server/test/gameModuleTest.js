@@ -19,6 +19,7 @@ describe("Game Create",function(){
 
          var game2 = gameMgr.Create(123,"testGame", "3", "beijing", 100, 1, 1, 0)
          assert.equal(2,game2.ID,"game id is not 2")
+         assert.equal("1",gameMgr.games.get("1").ID,"")
     });
    });
 });
@@ -139,6 +140,7 @@ describe("Game Update Map",function(){
          var pushMessageArray= new Array()
          
          game.UpdateMap("123", game.GOmap.get("apple_62").X, game.GOmap.get("apple_62").Y, pushMessageArray)
+         assert.equal("1", gameMgr.games.get("1").ID,"")
          assert.equal(1, game.GOmap.get("player_123").Score, "player score udpate error")
          assert.equal(0, game.GOmap.get("apple_62").CloneRole.HealthPoint, "apple state update error")
         //  console.log("******************")
@@ -395,5 +397,13 @@ describe("Game Leave",function(){
         assert.equal(true, feedbackInfo.success, "false") 
         });
 
+   });
+});
+
+describe("test isInRange",function(){
+  describe("test isInRange", function(){
+     it("test isInRange",function(){
+         assert(true,gr.IsInRange(39.984105,116.357716,39.97792034441591,116.35771134441592,2),"")
+    });
    });
 });

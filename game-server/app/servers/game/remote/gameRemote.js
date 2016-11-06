@@ -1,5 +1,22 @@
 gr = require('./gameModule.js')
 
+var GAME_NOT_FOUND = "没有这个游戏！";
+var GAME_FULL = "游戏人数已满！";
+var GAME_STARTED = "游戏状态不是等待！";
+var ALREADY_IN_GAME = "已经加入这个游戏！";
+var NOT_IN_GAME = "不在这个游戏！";
+var NOT_HOST_IN_GAME = "不是游戏创建者！";
+var GAME_NOT_READY = "游戏状态不能开始！";
+var GAME_NOT_STARTED = "游戏没有开始！";
+var USER_NOT_IN_GAME = "游戏中没有这个用户！";
+var PLAYERS_OUT_OF_GAME = "玩家不在地图内！"
+var NOT_CAPABLE = "玩家没有这个道具！";
+var USER_UNDER_ITEM = "用户已被使用道具！"
+
+var GAME_STATE_WAITING = 0;
+var GAME_STATE_STARTED = 1;
+var GAME_STATE_STOPPED = 2;
+
 module.exports = function(app) {
 	return new GameRemote(app);
 };
@@ -79,9 +96,7 @@ function SetupMap(game, channelService)
 function UpdateMap(gameid, userid, x, y)
 {
     var pushMessageArray = new Array()
-
-    gameManager.game[gameid].UpdateMap(userid, x, y, pushMessageArray)
-    
+    gameManager.games.get(gameid.toString()).UpdateMap(userid.toString(), parseFloat(x), parseFloat(y), pushMessageArray)
 
     var channel = channels.get(gameid)
     for(var index in pushMessageArray)
@@ -141,7 +156,7 @@ GameRemote.prototype.join = function (msg, serverid, next) {
     var success = false
     var message = GAME_NOT_FOUND
     var feedbackInfo = {success:success, message:message}
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         game.Join(msg, feedbackInfo)
@@ -169,7 +184,7 @@ GameRemote.prototype.leave = function (msg, serverid, next) {
     var pushMessageArray = new Array()
     var feedbackInfo = {success:success, message:message}
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         
@@ -201,7 +216,7 @@ GameRemote.prototype.start = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         if (userid === game.Host) {
@@ -236,7 +251,7 @@ GameRemote.prototype.stop = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         if (userid === game.Host) {
@@ -274,7 +289,7 @@ GameRemote.prototype.querymap = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         if(game.State === GAME_STATE_STARTED)
@@ -302,7 +317,8 @@ GameRemote.prototype.report = function (msg, next) {
     var y = parseFloat(msg.y)
     var gameid = msg.gameid
     var player
-    var game = gameManager.games[gameid]
+
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         player = game.Players.get(userid)
@@ -341,7 +357,7 @@ GameRemote.prototype.report = function (msg, next) {
 
             channel.pushMessage('onPlayerUpdate', {userid:"player_"+userid,x:msg.x,y:msg.y});
                     
-            var gomap = maps.get(player.GameID)
+            var gomap = game.GOmap
             if(!!gomap)
             {
                 var playergo = gomap.get("player_"+userid)
@@ -371,7 +387,8 @@ GameRemote.prototype.reportusersforgame = function (msg, next){
     var message = GAME_NOT_FOUND
     var players = ""
     
-    var game = gameManager.games[gameid]
+    console.log(gameid)
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         success = true
@@ -381,14 +398,14 @@ GameRemote.prototype.reportusersforgame = function (msg, next){
     next(null, {
         success: success,
         message: message,
-        players: game.Players
+        players: players
     })
 }
 
 GameRemote.prototype.send = function(msg, next) {
     var gameid = msg.gameid
     
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         var param = {
@@ -426,7 +443,7 @@ GameRemote.prototype.kickuser = function (msg, serverid, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         if (userid === game.Host) {           
@@ -470,7 +487,7 @@ GameRemote.prototype.useitem = function (msg, next) {
 
 
     var gameid = msg.gameid
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     var pushMessageArray = Array()
     var channel = channels.get(gameid)
     var feedbackInfo = {success:success, message:message}
@@ -494,7 +511,7 @@ GameRemote.prototype.dropitem = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         var gomap = game.GOmap.get(gameid)
@@ -539,7 +556,7 @@ GameRemote.prototype.freezeuser = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         if (true) { // later need check if user have this ability          
@@ -574,7 +591,7 @@ GameRemote.prototype.unfreezeuser = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         if (true) { // later need check if user have this ability          
@@ -611,7 +628,7 @@ GameRemote.prototype.targetuser = function (msg, next) {
     var success = false
     var message = GAME_NOT_FOUND
 
-    var game = gameManager.games[gameid]
+    var game = gameManager.games.get(gameid)
     if(!!game)
     {
         if (true) { // later need check if user have this ability          
