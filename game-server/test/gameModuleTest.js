@@ -403,7 +403,7 @@ describe("Game Leave",function(){
 describe("test isInRange",function(){
   describe("test isInRange", function(){
      it("test isInRange",function(){
-         assert(true,gr.IsInRange(39.984105,116.357716,39.97792034441591,116.35771134441592,2),"")
+         assert(true,gr.IsInRange(39.978154,116.357806,39.97787934441591,116.35765334441592,2),"")
     });
    });
 });

@@ -45,11 +45,6 @@ function CanAttack(playergo, go)
         if(attackRoles.indexOf(go.CloneRole.Name) > -1)
         {
             var attackrange = parseFloat(playergo.CloneRole.AttackRange)
-            console.log("&&&&a"+playergo.X)
-            console.log("&&&&b"+playergo.Y)
-            console.log("&&&&c"+go.X)
-            console.log("&&&&d"+go.Y)
-            console.log("&&&&e"+attackrange)
             return IsInRange(parseFloat(playergo.X), parseFloat(playergo.Y),parseFloat(go.X),parseFloat(go.Y), attackrange)
         }
     }
@@ -73,7 +68,6 @@ function CanAcquire(playergo, go)
 function IsInRange(x1, y1, x2, y2, range)
 {
     var distance = getFlatternDistance(x1,y1,x2,y2)  
-    console.log("#####"+distance)  
     return distance < range
 }
 
@@ -84,15 +78,12 @@ function ConfigureReader()
     var fs = require('fs')
     var dir = "gameconfig"
     var files = fs.readdirSync(dir);
-    console.log(files.length)
     for(var index=0;index<files.length;index++)
     {
         var str = fs.readFileSync(dir + "/" + files[index], "utf8")
         var config = JSON.parse(str)
-        console.log(config.Name)
         gameConfigs.set(config.Name, config)
     }
-        console.log(gameConfigs)
         return gameConfigs
 }
 
@@ -366,10 +357,7 @@ var Ayo_Game=
                     var row = Math.round((game.Radius*2/1.414)/distance)
                     var column = Math.round((game.Radius*2/1.414)/distance)
                     
-                    console.log("Map grid for role: " + role.Name)
-                    console.log(" row:"+row)
-                    console.log(" column:"+column)
-                    console.log(process.cwd())
+                    
             
                     if(role.Pattern === "Picture")
                     {
@@ -634,6 +622,7 @@ var Ayo_Game=
                     canmove = false
                 }
             }
+
             if(canmove)
             {
                 playergo.X = x
@@ -855,7 +844,7 @@ var Ayo_Game=
                 feedbackInfo.success = true
                 game.Players.delete(userid)
                 game.CurrentPlayers.splice(game.CurrentPlayers.indexOf(userid), 1)
-                console.log("***user "+userid+" leave the game.")
+                console.log("*** user "+userid+" leave the game.")
                 
                 if (game.CurrentPlayers.length == 0) {
                     game.UpdateGameResult(pushMessageArray)

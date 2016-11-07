@@ -387,7 +387,6 @@ GameRemote.prototype.reportusersforgame = function (msg, next){
     var message = GAME_NOT_FOUND
     var players = ""
     
-    console.log(gameid)
     var game = gameManager.games.get(gameid)
     if(!!game)
     {
