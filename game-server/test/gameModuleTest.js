@@ -249,6 +249,7 @@ describe("Game Update Map",function(){
          assert.equal("onStop", pushMessageArray[4].event, "game stopped error")
          assert.equal("123", pushMessageArray[4].msg[0].userid, "user id error")
          assert.equal("+20", pushMessageArray[4].msg[0].gain, "user id error")
+         assert.equal(game.GOmap.get("player_123").Role, pushMessageArray[4].msg[0].role, "user role error")
          assert.equal(game.GOmap.get("player_123").Role, game.Winer, "game winner not correct!")
          console.log("******************")
         //  assert.equal(0, game.GOmap.get("LightOfPunishment_0").CloneRole.HealthPoint, "apple state update error")

@@ -233,9 +233,10 @@ var Ayo_Game=
         var player = new Ayo_Player.createNew(userid, centerlati, centerlong, game.ID)
         game.Players.set(userid,player)
 
-        game.GameResultInfo = function(userid, gain)
+        game.GameResultInfo = function(userid, role, gain)
         {
             this.userid = userid
+            this.role = role
             this.gain = gain
         }
 
@@ -434,6 +435,9 @@ var Ayo_Game=
                 var startPointLati = parseFloat(game.CenterLati)-(parseInt(game.Radius)/(1.414*111000))
                 var startPointLong = parseFloat(game.CenterLong) - (parseInt(game.Radius)/(1.414*111000))
 
+                //for testing
+              //  row = column =1;
+
                 for (var i = 0; i < row; i++){
                     for (var j=0; j < column;j++){
                         if(distribution[i][j]==1)
@@ -529,13 +533,13 @@ var Ayo_Game=
             var endIndex = game.CurrentPlayers.length-1
             for (var i = 0; i < game.CurrentPlayers.length; i++) {
                         if (game.GOmap.get("player_"+game.CurrentPlayers[i]).Role === game.Winer) {
-                            var playerInfo = new game.GameResultInfo(game.CurrentPlayers[i], "+20")
+                            var playerInfo = new game.GameResultInfo(game.CurrentPlayers[i],game.GOmap.get("player_"+game.CurrentPlayers[i]).Role,"+20")
 
                             playerList[startIndex++] = playerInfo;
                         }
                         else
                         {
-                            var playerInfo = new game.GameResultInfo(game.CurrentPlayers[i], "-5")
+                            var playerInfo = new game.GameResultInfo(game.CurrentPlayers[i], game.GOmap.get("player_"+game.CurrentPlayers[i]).Role, "-5")
                             playerList[endIndex--] = playerInfo;
                         }
                     }
